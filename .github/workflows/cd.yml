@@ -1,0 +1,52 @@
+name: ci
+run-name: Continuous Delivery
+on:
+  push:
+    branches:
+      - main
+
+env:
+  RUSTFLAGS: "-Dwarnings"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+      - name: Install Wasm-Pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Build Wasm
+        run: wasm-pack build --release
+        working-directory: ./commitcanvas/
+      - name: Build Tailwind
+        run: npx tailwindcss -i ./css/input.css -o ./css/output.css
+        working-directory: ./www
+      - name: Build JS
+        run: npm run build
+        working-directory: ./www
+      - name: Copy CSS
+        run: |
+          mkdir -p ./dist/css
+          cp ./css/output.css ./dist/css/output.css
+        working-directory: ./www
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: 'dist'
+        working-directory: ./www
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+
+
+
