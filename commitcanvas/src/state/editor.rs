@@ -1,0 +1,304 @@
+use wasm_bindgen::prelude::*;
+
+use super::marker::Marker;
+use crate::draw::line::Line;
+use crate::draw::point::Point;
+
+#[derive(Debug, Clone)]
+pub struct Square {
+    pub top: Line,
+    pub left: Line,
+    pub right: Line,
+    pub bottom: Line,
+}
+
+#[derive(Debug, Clone)]
+pub enum EditorMode {
+    Normal,
+    Arrow {
+        start: Option<Line>,
+    },
+    Square {
+        state: Option<Square>,
+    },
+    Text {
+        text: Option<web_sys::SvgForeignObjectElement>,
+    },
+}
+
+pub struct Editor {
+    document: web_sys::Document,
+    svg: web_sys::SvgElement,
+    mode: EditorMode,
+    marker: Marker,
+    lines: Vec<Line>,
+    squares: Vec<Square>,
+}
+
+impl Editor {
+    pub fn new(document: web_sys::Document, svg: web_sys::SvgElement) -> Result<Self, JsValue> {
+        let mut marker = Marker::new(document.clone(), svg.clone());
+        marker.set_marker(false)?;
+        Ok(Self {
+            document: document.clone(),
+            svg: svg.clone(),
+            mode: EditorMode::Normal,
+            marker,
+            lines: vec![],
+            squares: vec![],
+        })
+    }
+
+    pub fn set_mode(&mut self, mode: EditorMode) -> Result<(), JsValue> {
+        self.mode = mode;
+        match self.mode {
+            EditorMode::Normal => {
+                self.marker.set_marker(false)?;
+                self.set_active_nav_button("selectCanvas")?;
+            }
+            EditorMode::Arrow { start: _ } => {
+                self.marker.set_marker(true)?;
+                self.set_active_nav_button("arrowCanvas")?;
+            }
+            EditorMode::Text { text: _ } => {
+                self.marker.set_marker(true)?;
+                self.set_active_nav_button("textCanvas")?;
+            }
+            EditorMode::Square { state: _ } => {
+                self.marker.set_marker(true)?;
+                self.set_active_nav_button("squareCanvas")?;
+            }
+        }
+        Ok(())
+    }
+
+    fn set_active_nav_button(&self, id: &str) -> Result<(), JsValue> {
+        let buttons = self
+            .document
+            .get_elements_by_class_name("cc_nav_button_selected");
+        for i in 0..buttons.length() {
+            let button = buttons.item(i).unwrap();
+            button
+                .dyn_into::<web_sys::HtmlButtonElement>()?
+                .class_list()
+                .remove_1("cc_nav_button_selected")?;
+        }
+        let button = self
+            .document
+            .get_element_by_id(id)
+            .expect("No button found")
+            .dyn_into::<web_sys::HtmlButtonElement>()?;
+        button.class_list().add_1("cc_nav_button_selected")?;
+        Ok(())
+    }
+
+    pub fn mousedown(&mut self, _event: &web_sys::MouseEvent) -> Result<(), JsValue> {
+        match &mut self.mode {
+            EditorMode::Normal => {}
+            EditorMode::Arrow { start } => {
+                if let Some(coords) = self.marker.nearest_marker_coords {
+                    if start.is_none() {
+                        let line = Line::new(
+                            &self.document,
+                            &self.svg,
+                            coords.clone(),
+                            coords.clone(),
+                            "cc_arrow_provisional",
+                        )?;
+                        *start = Some(line);
+                    }
+                }
+            }
+            EditorMode::Square { state } => {
+                if let Some(coords) = self.marker.nearest_marker_coords {
+                    if state.is_none() {
+                        let top = Line::new(
+                            &self.document,
+                            &self.svg,
+                            coords.clone(),
+                            coords.clone(),
+                            "cc_square_provisional",
+                        )?;
+                        let left = Line::new(
+                            &self.document,
+                            &self.svg,
+                            coords.clone(),
+                            coords.clone(),
+                            "cc_square_provisional",
+                        )?;
+                        let right = Line::new(
+                            &self.document,
+                            &self.svg,
+                            coords.clone(),
+                            coords.clone(),
+                            "cc_square_provisional",
+                        )?;
+                        let bottom = Line::new(
+                            &self.document,
+                            &self.svg,
+                            coords.clone(),
+                            coords.clone(),
+                            "cc_square_provisional",
+                        )?;
+                        *state = Some(Square {
+                            top,
+                            left,
+                            right,
+                            bottom,
+                        });
+                    }
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    pub fn mousemove(&mut self, event: &web_sys::MouseEvent) -> Result<(), JsValue> {
+        let coords = Point::new(event.x(), event.y());
+
+        self.marker.set_mouse_coords(coords)?;
+        match &mut self.mode {
+            EditorMode::Normal => {}
+            EditorMode::Arrow { start } => {
+                if let (Some(line), Some(coords)) = (start, self.marker.nearest_marker_coords) {
+                    line.update_end(coords)?;
+                }
+            }
+            EditorMode::Square { state } => {
+                if let (Some(state), Some(coords)) = (state, self.marker.nearest_marker_coords) {
+                    let start = state.top.start;
+                    state.top.update(start, Point::new(coords.x, start.y))?;
+                    state.left.update(start, Point::new(start.x, coords.y))?;
+                    state.right.update(Point::new(coords.x, start.y), coords)?;
+                    state.bottom.update(Point::new(start.x, coords.y), coords)?;
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    pub fn mouseup(&mut self, _event: &web_sys::MouseEvent) -> Result<(), JsValue> {
+        match &mut self.mode {
+            EditorMode::Normal => {}
+            EditorMode::Arrow { start } => {
+                if let Some(coords) = self.marker.nearest_marker_coords {
+                    if let Some(mut line) = start.take() {
+                        if coords != line.start {
+                            line.set_class("cc_arrow")?;
+                            self.lines.push(line);
+                        }
+                        self.set_mode(EditorMode::Normal)?;
+                    }
+                }
+            }
+            EditorMode::Square { state } => {
+                if let Some(mut state) = state.take() {
+                    if state.top.start != state.top.end && state.left.start != state.left.end {
+                        state.top.set_class("cc_square")?;
+                        state.left.set_class("cc_square")?;
+                        state.right.set_class("cc_square")?;
+                        state.bottom.set_class("cc_square")?;
+                        self.squares.push(state);
+                    }
+                    self.set_mode(EditorMode::Normal)?;
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    pub fn click(&mut self, event: &web_sys::MouseEvent) -> Result<(), JsValue> {
+        match &mut self.mode {
+            EditorMode::Text { text } => {
+                if let Some(coords) = self.marker.nearest_marker_coords {
+                    if let Some(fo_wrapper) = text {
+                        let textarea = self
+                            .document
+                            .get_element_by_id("current_textarea")
+                            .expect("No textarea found")
+                            .dyn_into::<web_sys::HtmlTextAreaElement>()?;
+                        let text_node = self
+                            .document
+                            .create_element_ns(Some("http://www.w3.org/2000/svg"), "text")?;
+                        let bounding_box = textarea.get_bounding_client_rect();
+
+                        // If click was on boundig box, then we ignore it
+                        if event.x() >= bounding_box.x() as i32
+                            && event.x() <= (bounding_box.x() + bounding_box.width()) as i32
+                            && event.y() >= bounding_box.y() as i32
+                            && event.y() <= (bounding_box.y() + bounding_box.height()) as i32
+                        {
+                            return Ok(());
+                        }
+
+                        let text = textarea.value();
+                        text_node.set_attribute("class", "cc_text")?;
+
+                        // Map lines to tspan elements
+                        let mut first = true;
+                        for line in text.lines() {
+                            let tspan = self
+                                .document
+                                .create_element_ns(Some("http://www.w3.org/2000/svg"), "tspan")?;
+                            tspan.set_text_content(Some(line));
+                            if first {
+                                first = false;
+                                tspan.set_attribute(
+                                    "y",
+                                    (bounding_box.y() + 19.0).to_string().as_str(),
+                                )?;
+                            } else {
+                                tspan.set_attribute("dy", "1.5em")?;
+                            }
+                            tspan.set_attribute(
+                                "x",
+                                (bounding_box.x() + 1.0).to_string().as_str(),
+                            )?;
+                            text_node.append_child(&tspan)?;
+                        }
+
+                        fo_wrapper.remove();
+                        self.svg.append_child(&text_node)?;
+                        self.set_mode(EditorMode::Normal)?;
+                    } else {
+                        let fo_wrapper = self
+                            .document
+                            .create_element_ns(Some("http://www.w3.org/2000/svg"), "foreignObject")?
+                            .dyn_into::<web_sys::SvgForeignObjectElement>()?;
+                        fo_wrapper.set_attribute("x", &coords.x.to_string())?;
+                        fo_wrapper.set_attribute("y", &coords.y.to_string())?;
+                        fo_wrapper.set_attribute("width", "240")?;
+                        fo_wrapper.set_attribute("height", "100")?;
+                        fo_wrapper.set_attribute("overflow", "visible")?;
+                        //fo_wrapper
+                        //    .style()
+                        //    .set_property("-webkit-transform", "rotate(20deg)")?;
+                        let new_ta = self.document.create_element("textarea")?;
+                        new_ta.set_attribute("class", "cc_textarea")?;
+                        new_ta.set_id("current_textarea");
+                        fo_wrapper.append_child(&new_ta)?;
+                        self.svg.append_child(&fo_wrapper)?;
+                        *text = Some(fo_wrapper);
+                    }
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    pub fn touchstart(&mut self, _event: &web_sys::TouchEvent) -> Result<(), JsValue> {
+        Ok(())
+    }
+
+    pub fn touchmove(&mut self, _event: &web_sys::TouchEvent) -> Result<(), JsValue> {
+        Ok(())
+    }
+
+    pub fn touchend(&mut self, _event: &web_sys::TouchEvent) -> Result<(), JsValue> {
+        Ok(())
+    }
+}

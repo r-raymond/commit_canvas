@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+#nearest_marker {
+    @apply fill-stone-400;
+}
+
+#pattern_circle {
+    @apply fill-stone-300;
+}
+
+.cc_app {
+}
+
+.cc_menu_top {
+    @apply absolute top-0 inset-x-1/2 inline-flex translate-x-[-4rem] translate-y-8;
+}
+
+.cc_arrow_provisional {
+    @apply stroke-stone-400 stroke-2;
+}
+
+.cc_square_provisional {
+    @apply stroke-stone-400 stroke-2;
+}
+
+.cc_arrow {
+    @apply stroke-stone-800 stroke-2;
+}
+
+.cc_square {
+    @apply stroke-stone-800 stroke-2;
+}
+
+.cc_nav_button {
+    @apply px-2 py-2 bg-stone-100 hover:bg-stone-200 focus:outline-none text-stone-800 border-stone-400 border-t border-b border-r;
+}
+
+.cc_nav_left {
+    @apply rounded-l-lg border;
+}
+
+.cc_nav_right {
+    @apply rounded-r-lg;
+}
+
+.cc_nav_button_selected {
+    @apply bg-white;
+}
+
+.cc_textarea {
+    @apply bg-transparent hover:bg-stone-100 hover:opacity-50 focus:outline-none text-stone-800 border-stone-400 border rounded-l border-dashed;
+    @apply resize;
+}
+

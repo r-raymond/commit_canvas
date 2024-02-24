@@ -1,0 +1,8 @@
+[package]
+name = "rough"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+
+[dependencies]
+rand = "0.8"
