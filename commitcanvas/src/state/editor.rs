@@ -294,10 +294,12 @@ impl Editor {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn touchmove(&mut self, _event: &web_sys::TouchEvent) -> Result<(), JsValue> {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn touchend(&mut self, _event: &web_sys::TouchEvent) -> Result<(), JsValue> {
         Ok(())
     }
