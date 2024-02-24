@@ -3,7 +3,7 @@ mod marker;
 
 use editor::Editor;
 use std::cell::RefCell;
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::{JsCast, JsValue};
 
 pub struct State {
     pub window: web_sys::Window,

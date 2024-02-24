@@ -1,5 +1,5 @@
 use super::point::Point;
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsValue;
 
 #[derive(Debug, Clone)]
 pub struct Line {

@@ -1,4 +1,5 @@
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::closure::Closure;
+use wasm_bindgen::{JsCast, JsValue};
 
 use crate::state;
 use crate::state::editor::EditorMode;

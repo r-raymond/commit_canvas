@@ -1,4 +1,4 @@
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::{JsCast, JsValue};
 
 use super::marker::Marker;
 use crate::draw::line::Line;

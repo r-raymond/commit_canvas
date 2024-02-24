@@ -1,4 +1,4 @@
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsValue;
 
 mod buttons;
 mod keys;

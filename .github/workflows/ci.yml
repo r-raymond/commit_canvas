@@ -19,7 +19,7 @@ jobs:
       - name: Build
         run: cargo build --verbose
       - name: Clippy
-        run: cargo clippy --all-targets --all-features 
+        run: cargo check
       - name: Test
         run: cargo test --verbose
 

@@ -1,5 +1,6 @@
 use crate::state;
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::closure::Closure;
+use wasm_bindgen::{JsCast, JsValue};
 
 /// Callback for all touch start events on the SVG canvas.
 fn touchstart(event: web_sys::TouchEvent) -> Result<(), JsValue> {
