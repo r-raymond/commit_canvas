@@ -35,6 +35,8 @@ jobs:
         run: npx tailwindcss -i ./css/input.css -o ./css/output.css
         working-directory: ./www
       - name: Build JS
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
         run: npm run build
         working-directory: ./www
       - name: Copy CSS
