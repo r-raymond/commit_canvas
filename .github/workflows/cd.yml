@@ -28,6 +28,9 @@ jobs:
       - name: Build Wasm
         run: wasm-pack build --release
         working-directory: ./commitcanvas/
+      - name: Install NPM Dependencies
+        run: npm install
+        working-directory: ./www
       - name: Build Tailwind
         run: npx tailwindcss -i ./css/input.css -o ./css/output.css
         working-directory: ./www
