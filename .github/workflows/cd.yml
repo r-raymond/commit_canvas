@@ -1,4 +1,4 @@
-name: ci
+name: cd
 run-name: Continuous Delivery
 on:
   push:

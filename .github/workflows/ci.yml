@@ -18,7 +18,7 @@ jobs:
         uses: actions-rust-lang/rustfmt@v1
       - name: Build
         run: cargo build --verbose
-      - name: Clippy
+      - name: Check
         run: cargo check
       - name: Test
         run: cargo test --verbose
