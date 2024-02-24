@@ -16,7 +16,7 @@ pub struct Square {
 pub enum EditorMode {
     Normal,
     Arrow {
-        start: Option<Line>,
+        state: Option<Line>,
     },
     Square {
         state: Option<Square>,
@@ -56,7 +56,7 @@ impl Editor {
                 self.marker.set_marker(false)?;
                 self.set_active_nav_button("selectCanvas")?;
             }
-            EditorMode::Arrow { start: _ } => {
+            EditorMode::Arrow { state: _ } => {
                 self.marker.set_marker(true)?;
                 self.set_active_nav_button("arrowCanvas")?;
             }
@@ -92,12 +92,12 @@ impl Editor {
         Ok(())
     }
 
-    pub fn mousedown(&mut self, _event: &web_sys::MouseEvent) -> Result<(), JsValue> {
+    pub fn mousedown(&mut self, event: &web_sys::MouseEvent) -> Result<(), JsValue> {
         match &mut self.mode {
             EditorMode::Normal => {}
-            EditorMode::Arrow { start } => {
+            EditorMode::Arrow { state } => {
                 if let Some(coords) = self.marker.nearest_marker_coords {
-                    if start.is_none() {
+                    if state.is_none() {
                         let line = Line::new(
                             &self.document,
                             &self.svg,
@@ -105,7 +105,12 @@ impl Editor {
                             coords.clone(),
                             "cc_arrow_provisional",
                         )?;
-                        *start = Some(line);
+                        *state = Some(line);
+                    } else {
+                        if event.button() == 2 {
+                            state.take();
+                            self.set_mode(EditorMode::Normal)?;
+                        }
                     }
                 }
             }
@@ -146,6 +151,11 @@ impl Editor {
                             right,
                             bottom,
                         });
+                    } else {
+                        if event.button() == 2 {
+                            state.take();
+                            self.set_mode(EditorMode::Normal)?;
+                        }
                     }
                 }
             }
@@ -160,8 +170,8 @@ impl Editor {
         self.marker.set_mouse_coords(coords)?;
         match &mut self.mode {
             EditorMode::Normal => {}
-            EditorMode::Arrow { start } => {
-                if let (Some(line), Some(coords)) = (start, self.marker.nearest_marker_coords) {
+            EditorMode::Arrow { state } => {
+                if let (Some(line), Some(coords)) = (state, self.marker.nearest_marker_coords) {
                     line.update_end(coords)?;
                 }
             }
@@ -182,9 +192,9 @@ impl Editor {
     pub fn mouseup(&mut self, _event: &web_sys::MouseEvent) -> Result<(), JsValue> {
         match &mut self.mode {
             EditorMode::Normal => {}
-            EditorMode::Arrow { start } => {
+            EditorMode::Arrow { state } => {
                 if let Some(coords) = self.marker.nearest_marker_coords {
-                    if let Some(mut line) = start.take() {
+                    if let Some(mut line) = state.take() {
                         if coords != line.start {
                             line.set_class("cc_arrow")?;
                             self.lines.push(line);

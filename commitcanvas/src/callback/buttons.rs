@@ -15,7 +15,7 @@ fn click_helper(_event: web_sys::MouseEvent, editor_mode: EditorMode) -> Result<
 pub fn register(document: &web_sys::Document) -> Result<(), JsValue> {
     for (id, mode) in vec![
         ("selectCanvas", EditorMode::Normal),
-        ("arrowCanvas", EditorMode::Arrow { start: None }),
+        ("arrowCanvas", EditorMode::Arrow { state: None }),
         ("textCanvas", EditorMode::Text { text: None }),
         ("squareCanvas", EditorMode::Square { state: None }),
     ] {
