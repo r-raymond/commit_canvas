@@ -59,7 +59,7 @@ impl Editor {
             }
             EditorMode::Rect { state: _ } => {
                 self.marker.set_marker(true)?;
-                self.set_active_nav_button("squareCanvas")?;
+                self.set_active_nav_button("rectCanvas")?;
             }
         }
         Ok(())
