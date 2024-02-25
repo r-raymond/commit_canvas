@@ -13,12 +13,7 @@ fn click_helper(_event: web_sys::MouseEvent, editor_mode: EditorMode) -> Result<
 }
 
 pub fn register(document: &web_sys::Document) -> Result<(), JsValue> {
-    for (id, mode) in vec![
-        ("selectCanvas", EditorMode::Normal),
-        ("arrowCanvas", EditorMode::Arrow { state: None }),
-        ("textCanvas", EditorMode::Text { text: None }),
-        ("rectCanvas", EditorMode::Rect { state: None }),
-    ] {
+    for id in vec!["selectCanvas", "arrowCanvas", "textCanvas", "rectCanvas"] {
         let button = document
             .get_element_by_id(id)
             .expect("No button found")
@@ -27,7 +22,14 @@ pub fn register(document: &web_sys::Document) -> Result<(), JsValue> {
         {
             let closure = Closure::wrap(Box::new(
                 move |event: web_sys::MouseEvent| -> Result<(), JsValue> {
-                    click_helper(event, mode.clone())
+                    let mode = match id {
+                        "selectCanvas" => EditorMode::Normal,
+                        "arrowCanvas" => EditorMode::Arrow { state: None },
+                        "textCanvas" => EditorMode::Text { text: None },
+                        "rectCanvas" => EditorMode::Rect { state: None },
+                        _ => panic!("Unknown button id"),
+                    };
+                    click_helper(event, mode)
                 },
             )
                 as Box<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>);

@@ -3,7 +3,6 @@ use wasm_bindgen::{JsCast, JsValue};
 
 use crate::state;
 use crate::state::editor::EditorMode;
-use std::collections::HashMap;
 
 fn key_helper(_event: web_sys::KeyboardEvent, editor_mode: EditorMode) -> Result<(), JsValue> {
     state::STATE.with(|s| -> Result<_, JsValue> {
@@ -14,21 +13,18 @@ fn key_helper(_event: web_sys::KeyboardEvent, editor_mode: EditorMode) -> Result
 }
 
 pub fn register(document: &web_sys::Document) -> Result<(), JsValue> {
-    let mut lookup = HashMap::new();
-    lookup.insert("1", EditorMode::Normal);
-    lookup.insert("2", EditorMode::Arrow { state: None });
-    lookup.insert("3", EditorMode::Rect { state: None });
-    lookup.insert("4", EditorMode::Text { text: None });
-
     {
         let closure = Closure::wrap(Box::new(
             move |event: web_sys::KeyboardEvent| -> Result<(), JsValue> {
                 let key = event.key();
-                if let Some(mode) = lookup.get(key.as_str()) {
-                    key_helper(event, mode.clone())
-                } else {
-                    Ok(())
-                }
+                let mode = match key.as_str() {
+                    "s" => EditorMode::Normal,
+                    "a" => EditorMode::Arrow { state: None },
+                    "t" => EditorMode::Text { text: None },
+                    "r" => EditorMode::Rect { state: None },
+                    _ => return Ok(()),
+                };
+                key_helper(event, mode)
             },
         )
             as Box<dyn FnMut(web_sys::KeyboardEvent) -> Result<(), JsValue>>);

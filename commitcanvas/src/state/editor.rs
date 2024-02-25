@@ -7,7 +7,6 @@ use crate::draw::Rect;
 use crate::state::guid::GuidGenerator;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
 pub enum EditorMode {
     Normal,
     Arrow {
@@ -98,6 +97,7 @@ impl Editor {
                         let line = Line::new(
                             &self.document,
                             &self.svg,
+                            self.guid.next(),
                             coords.clone(),
                             coords.clone(),
                             "cc_arrow_provisional",
@@ -164,9 +164,7 @@ impl Editor {
                     if let Some(mut line) = state.take() {
                         if coords != line.start {
                             line.set_class("cc_arrow")?;
-                            let id = self.guid.next();
-                            line.set_id(id)?;
-                            self.lines.insert(id, line);
+                            self.lines.insert(line.guid, line);
                         }
                         self.set_mode(EditorMode::Normal)?;
                     }
@@ -264,6 +262,13 @@ impl Editor {
                 }
             }
             _ => {}
+        }
+        Ok(())
+    }
+
+    pub fn select(&mut self, item: i32) -> Result<(), JsValue> {
+        if let Some(line) = self.lines.remove(&item) {
+            self.set_mode(EditorMode::Arrow { state: Some(line) })?;
         }
         Ok(())
     }
