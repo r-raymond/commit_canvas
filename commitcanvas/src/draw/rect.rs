@@ -1,18 +1,23 @@
+use crate::state::STATE;
 use rough::Line as RoughLine;
 use rough::Point;
+use wasm_bindgen::closure::Closure;
+use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 
-#[derive(Debug, Clone)]
 pub struct Rect {
+    pub guid: i32,
     pub start: Point,
     pub end: Point,
     path: web_sys::Element,
+    callback: Option<Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>>,
 }
 
 impl Rect {
     pub fn new(
         document: &web_sys::Document,
         svg: &web_sys::SvgElement,
+        guid: i32,
         start: Point,
         end: Point,
         class: &str,
@@ -20,14 +25,24 @@ impl Rect {
         let path = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
         path.set_attribute("class", class)?;
         svg.append_child(&path)?;
-        path.set_attribute(
-            "d",
-            &format!(
-                "M {} {} L {} {} L {} {} L {} {} Z",
-                start.x, start.y, end.x, start.y, end.x, end.y, start.x, end.y
-            ),
-        )?;
-        Ok(Self { start, end, path })
+        let closure = Closure::wrap(Box::new(move |_event: web_sys::MouseEvent| {
+            STATE.with(|s| -> Result<_, JsValue> {
+                let mut state_ref = s.borrow_mut();
+                let state = state_ref.as_mut().ok_or("state is None")?;
+                state.editor.select(guid)?;
+                Ok(())
+            })?;
+            Ok(())
+        })
+            as Box<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>);
+        path.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
+        Ok(Self {
+            start,
+            end,
+            path,
+            guid,
+            callback: Some(closure),
+        })
     }
 
     pub fn update_end(&mut self, end: Point) -> Result<(), JsValue> {
@@ -57,9 +72,11 @@ impl Rect {
         self.path.set_attribute("class", class)?;
         Ok(())
     }
+}
 
-    pub fn set_id(&mut self, id: i32) -> Result<(), JsValue> {
-        self.path.set_id(&format!("{}_rect", id));
-        Ok(())
+impl Drop for Rect {
+    fn drop(&mut self) {
+        drop(self.callback.take());
+        self.path.remove();
     }
 }

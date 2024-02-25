@@ -36,16 +36,14 @@ impl Line {
         })
             as Box<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>);
         path.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
-        let result = Self {
+        path.set_attribute("id", &format!("{}_line", guid))?;
+        Ok(Self {
             guid,
             start,
             end,
             path: path.clone(),
             callback: Some(closure),
-        };
-        path.set_attribute("d", result.render().as_str())?;
-        path.set_attribute("id", &format!("{}_line", guid))?;
-        Ok(result)
+        })
     }
 
     pub fn update_end(&mut self, end: Point) -> Result<(), JsValue> {

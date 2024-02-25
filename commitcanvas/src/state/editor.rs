@@ -117,6 +117,7 @@ impl Editor {
                         let rect = Rect::new(
                             &self.document,
                             &self.svg,
+                            self.guid.next(),
                             coords.clone(),
                             coords.clone(),
                             "cc_rect_provisional",
@@ -174,9 +175,7 @@ impl Editor {
                 if let Some(mut state) = state.take() {
                     if state.start != state.end {
                         state.set_class("cc_rect")?;
-                        let id = self.guid.next();
-                        state.set_id(id)?;
-                        self.rects.insert(id, state);
+                        self.rects.insert(state.guid, state);
                     }
                     self.set_mode(EditorMode::Normal)?;
                 }
@@ -269,6 +268,9 @@ impl Editor {
     pub fn select(&mut self, item: i32) -> Result<(), JsValue> {
         if let Some(line) = self.lines.remove(&item) {
             self.set_mode(EditorMode::Arrow { state: Some(line) })?;
+        }
+        if let Some(rect) = self.rects.remove(&item) {
+            self.set_mode(EditorMode::Rect { state: Some(rect) })?;
         }
         Ok(())
     }
