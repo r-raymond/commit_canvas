@@ -57,4 +57,9 @@ impl Rect {
         self.path.set_attribute("class", class)?;
         Ok(())
     }
+
+    pub fn set_id(&mut self, id: i32) -> Result<(), JsValue> {
+        self.path.set_id(&format!("{}_rect", id));
+        Ok(())
+    }
 }

@@ -1,4 +1,5 @@
 pub mod editor;
+mod guid;
 mod marker;
 
 use editor::Editor;

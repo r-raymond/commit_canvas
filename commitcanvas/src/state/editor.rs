@@ -4,6 +4,8 @@ use super::marker::Marker;
 use crate::draw::Line;
 use crate::draw::Point;
 use crate::draw::Rect;
+use crate::state::guid::GuidGenerator;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub enum EditorMode {
@@ -24,8 +26,9 @@ pub struct Editor {
     svg: web_sys::SvgElement,
     mode: EditorMode,
     marker: Marker,
-    lines: Vec<Line>,
-    rects: Vec<Rect>,
+    lines: HashMap<i32, Line>,
+    rects: HashMap<i32, Rect>,
+    guid: GuidGenerator,
 }
 
 impl Editor {
@@ -37,8 +40,9 @@ impl Editor {
             svg: svg.clone(),
             mode: EditorMode::Normal,
             marker,
-            lines: vec![],
-            rects: vec![],
+            lines: HashMap::new(),
+            rects: HashMap::new(),
+            guid: GuidGenerator::new(),
         })
     }
 
@@ -160,7 +164,9 @@ impl Editor {
                     if let Some(mut line) = state.take() {
                         if coords != line.start {
                             line.set_class("cc_arrow")?;
-                            self.lines.push(line);
+                            let id = self.guid.next();
+                            line.set_id(id)?;
+                            self.lines.insert(id, line);
                         }
                         self.set_mode(EditorMode::Normal)?;
                     }
@@ -170,7 +176,9 @@ impl Editor {
                 if let Some(mut state) = state.take() {
                     if state.start != state.end {
                         state.set_class("cc_rect")?;
-                        self.rects.push(state);
+                        let id = self.guid.next();
+                        state.set_id(id)?;
+                        self.rects.insert(id, state);
                     }
                     self.set_mode(EditorMode::Normal)?;
                 }

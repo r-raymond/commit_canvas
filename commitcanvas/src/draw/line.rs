@@ -57,6 +57,11 @@ impl Line {
     fn render(&self) -> String {
         RoughLine::new(self.start, self.end).to_svg_path(10.0)
     }
+
+    pub fn set_id(&mut self, id: i32) -> Result<(), JsValue> {
+        self.path.set_id(&format!("{}_line", id));
+        Ok(())
+    }
 }
 
 impl Drop for Line {
