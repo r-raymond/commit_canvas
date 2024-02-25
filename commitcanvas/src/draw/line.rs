@@ -1,4 +1,5 @@
-use super::point::Point;
+use rough::Line as RoughLine;
+use rough::Point;
 use wasm_bindgen::JsValue;
 
 #[derive(Debug, Clone)]
@@ -18,12 +19,14 @@ impl Line {
     ) -> Result<Self, JsValue> {
         let path = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
         path.set_attribute("class", class)?;
-        path.set_attribute(
-            "d",
-            &format!("M {} {} L {} {}", start.x, start.y, end.x, end.y),
-        )?;
+        let result = Self {
+            start,
+            end,
+            path: path.clone(),
+        };
+        path.set_attribute("d", result.render().as_str())?;
         svg.append_child(&path)?;
-        Ok(Self { start, end, path })
+        Ok(result)
     }
 
     pub fn update_end(&mut self, end: Point) -> Result<(), JsValue> {
@@ -31,10 +34,7 @@ impl Line {
             return Ok(());
         }
         self.end = end;
-        self.path.set_attribute(
-            "d",
-            &format!("M {} {} L {} {}", self.start.x, self.start.y, end.x, end.y),
-        )?;
+        self.path.set_attribute("d", self.render().as_str())?;
         Ok(())
     }
 
@@ -45,16 +45,17 @@ impl Line {
         }
         self.start = start;
         self.end = end;
-        self.path.set_attribute(
-            "d",
-            &format!("M {} {} L {} {}", start.x, start.y, end.x, end.y),
-        )?;
+        self.path.set_attribute("d", self.render().as_str())?;
         Ok(())
     }
 
     pub fn set_class(&mut self, class: &str) -> Result<(), JsValue> {
         self.path.set_attribute("class", class)?;
         Ok(())
+    }
+
+    fn render(&self) -> String {
+        RoughLine::new(self.start, self.end).to_svg_path(10.0)
     }
 }
 

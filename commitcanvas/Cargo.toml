@@ -13,6 +13,7 @@ crate-type = ["cdylib"]
 [dependencies]
 wasm-bindgen = "0.2"
 console_error_panic_hook = { version = "0.1.7", optional = true }
+rough = { path = "../rough" }
 
 [dependencies.web-sys]
 version = "0.3"

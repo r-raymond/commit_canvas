@@ -1,4 +1,5 @@
-use super::point::Point;
+use rough::Line as RoughLine;
+use rough::Point;
 use wasm_bindgen::JsValue;
 
 #[derive(Debug, Clone)]
@@ -42,15 +43,11 @@ impl Rect {
         self.path.set_attribute(
             "d",
             &format!(
-                "M {} {} L {} {} L {} {} L {} {} Z",
-                self.start.x,
-                self.start.y,
-                self.end.x,
-                self.start.y,
-                self.end.x,
-                self.end.y,
-                self.start.x,
-                self.end.y
+                "{} {} {} {}",
+                RoughLine::new(self.start, Point::new(self.end.x, self.start.y)).to_svg_path(10.0),
+                RoughLine::new(Point::new(self.end.x, self.start.y), self.end).to_svg_path(10.0),
+                RoughLine::new(self.end, Point::new(self.start.x, self.end.y)).to_svg_path(10.0),
+                RoughLine::new(Point::new(self.start.x, self.end.y), self.start).to_svg_path(10.0),
             ),
         )?;
         Ok(())
