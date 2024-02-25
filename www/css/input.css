@@ -22,16 +22,16 @@
     @apply stroke-stone-400 stroke-2;
 }
 
-.cc_square_provisional {
-    @apply stroke-stone-400 stroke-2;
+.cc_rect_provisional {
+    @apply stroke-stone-400 stroke-2 fill-transparent;
 }
 
 .cc_arrow {
     @apply stroke-stone-800 stroke-2;
 }
 
-.cc_square {
-    @apply stroke-stone-800 stroke-2;
+.cc_rect {
+    @apply stroke-stone-800 stroke-2 fill-transparent;
 }
 
 .cc_nav_button {

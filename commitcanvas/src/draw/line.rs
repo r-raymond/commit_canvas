@@ -38,6 +38,7 @@ impl Line {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn update(&mut self, start: Point, end: Point) -> Result<(), JsValue> {
         if self.start == start && self.end == end {
             return Ok(());

@@ -25,7 +25,7 @@ pub struct Editor {
     mode: EditorMode,
     marker: Marker,
     lines: Vec<Line>,
-    squares: Vec<Rect>,
+    rects: Vec<Rect>,
 }
 
 impl Editor {
@@ -38,7 +38,7 @@ impl Editor {
             mode: EditorMode::Normal,
             marker,
             lines: vec![],
-            squares: vec![],
+            rects: vec![],
         })
     }
 
@@ -110,40 +110,14 @@ impl Editor {
             EditorMode::Rect { state } => {
                 if let Some(coords) = self.marker.nearest_marker_coords {
                     if state.is_none() {
-                        let top = Line::new(
+                        let rect = Rect::new(
                             &self.document,
                             &self.svg,
                             coords.clone(),
                             coords.clone(),
-                            "cc_square_provisional",
+                            "cc_rect_provisional",
                         )?;
-                        let left = Line::new(
-                            &self.document,
-                            &self.svg,
-                            coords.clone(),
-                            coords.clone(),
-                            "cc_square_provisional",
-                        )?;
-                        let right = Line::new(
-                            &self.document,
-                            &self.svg,
-                            coords.clone(),
-                            coords.clone(),
-                            "cc_square_provisional",
-                        )?;
-                        let bottom = Line::new(
-                            &self.document,
-                            &self.svg,
-                            coords.clone(),
-                            coords.clone(),
-                            "cc_square_provisional",
-                        )?;
-                        *state = Some(Rect {
-                            top,
-                            left,
-                            right,
-                            bottom,
-                        });
+                        *state = Some(rect);
                     } else {
                         if event.button() == 2 {
                             state.take();
@@ -170,11 +144,7 @@ impl Editor {
             }
             EditorMode::Rect { state } => {
                 if let (Some(state), Some(coords)) = (state, self.marker.nearest_marker_coords) {
-                    let start = state.top.start;
-                    state.top.update(start, Point::new(coords.x, start.y))?;
-                    state.left.update(start, Point::new(start.x, coords.y))?;
-                    state.right.update(Point::new(coords.x, start.y), coords)?;
-                    state.bottom.update(Point::new(start.x, coords.y), coords)?;
+                    state.update_end(coords)?;
                 }
             }
             _ => {}
@@ -198,12 +168,9 @@ impl Editor {
             }
             EditorMode::Rect { state } => {
                 if let Some(mut state) = state.take() {
-                    if state.top.start != state.top.end && state.left.start != state.left.end {
-                        state.top.set_class("cc_square")?;
-                        state.left.set_class("cc_square")?;
-                        state.right.set_class("cc_square")?;
-                        state.bottom.set_class("cc_square")?;
-                        self.squares.push(state);
+                    if state.start != state.end {
+                        state.set_class("cc_rect")?;
+                        self.rects.push(state);
                     }
                     self.set_mode(EditorMode::Normal)?;
                 }
