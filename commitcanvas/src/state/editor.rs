@@ -1,16 +1,9 @@
 use wasm_bindgen::{JsCast, JsValue};
 
 use super::marker::Marker;
-use crate::draw::line::Line;
-use crate::draw::point::Point;
-
-#[derive(Debug, Clone)]
-pub struct Rect {
-    pub top: Line,
-    pub left: Line,
-    pub right: Line,
-    pub bottom: Line,
-}
+use crate::draw::Line;
+use crate::draw::Point;
+use crate::draw::Rect;
 
 #[derive(Debug, Clone)]
 pub enum EditorMode {

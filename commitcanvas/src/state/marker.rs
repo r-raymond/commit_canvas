@@ -1,6 +1,6 @@
 use wasm_bindgen::JsValue;
 
-use crate::draw::point::Point;
+use crate::draw::Point;
 
 const PIXEL_STEP: i32 = 6;
 
