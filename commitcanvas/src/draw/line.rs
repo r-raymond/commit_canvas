@@ -5,7 +5,7 @@ use wasm_bindgen::JsValue;
 pub struct Line {
     pub start: Point,
     pub end: Point,
-    line: web_sys::Element,
+    path: web_sys::Element,
 }
 
 impl Line {
@@ -16,14 +16,14 @@ impl Line {
         end: Point,
         class: &str,
     ) -> Result<Self, JsValue> {
-        let line = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "line")?;
-        line.set_attribute("x1", &start.x.to_string())?;
-        line.set_attribute("y1", &start.y.to_string())?;
-        line.set_attribute("x2", &end.x.to_string())?;
-        line.set_attribute("y2", &end.y.to_string())?;
-        line.set_attribute("class", class)?;
-        svg.append_child(&line)?;
-        Ok(Self { start, end, line })
+        let path = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
+        path.set_attribute("class", class)?;
+        path.set_attribute(
+            "d",
+            &format!("M {} {} L {} {}", start.x, start.y, end.x, end.y),
+        )?;
+        svg.append_child(&path)?;
+        Ok(Self { start, end, path })
     }
 
     pub fn update_end(&mut self, end: Point) -> Result<(), JsValue> {
@@ -31,8 +31,10 @@ impl Line {
             return Ok(());
         }
         self.end = end;
-        self.line.set_attribute("x2", &end.x.to_string())?;
-        self.line.set_attribute("y2", &end.y.to_string())?;
+        self.path.set_attribute(
+            "d",
+            &format!("M {} {} L {} {}", self.start.x, self.start.y, end.x, end.y),
+        )?;
         Ok(())
     }
 
@@ -42,21 +44,21 @@ impl Line {
         }
         self.start = start;
         self.end = end;
-        self.line.set_attribute("x1", &start.x.to_string())?;
-        self.line.set_attribute("y1", &start.y.to_string())?;
-        self.line.set_attribute("x2", &end.x.to_string())?;
-        self.line.set_attribute("y2", &end.y.to_string())?;
+        self.path.set_attribute(
+            "d",
+            &format!("M {} {} L {} {}", start.x, start.y, end.x, end.y),
+        )?;
         Ok(())
     }
 
     pub fn set_class(&mut self, class: &str) -> Result<(), JsValue> {
-        self.line.set_attribute("class", class)?;
+        self.path.set_attribute("class", class)?;
         Ok(())
     }
 }
 
 impl Drop for Line {
     fn drop(&mut self) {
-        self.line.remove();
+        self.path.remove();
     }
 }
