@@ -17,7 +17,7 @@ pub fn register(document: &web_sys::Document) -> Result<(), JsValue> {
     let mut lookup = HashMap::new();
     lookup.insert("1", EditorMode::Normal);
     lookup.insert("2", EditorMode::Arrow { state: None });
-    lookup.insert("3", EditorMode::Square { state: None });
+    lookup.insert("3", EditorMode::Rect { state: None });
     lookup.insert("4", EditorMode::Text { text: None });
 
     {

@@ -17,7 +17,7 @@ pub fn register(document: &web_sys::Document) -> Result<(), JsValue> {
         ("selectCanvas", EditorMode::Normal),
         ("arrowCanvas", EditorMode::Arrow { state: None }),
         ("textCanvas", EditorMode::Text { text: None }),
-        ("squareCanvas", EditorMode::Square { state: None }),
+        ("rectCanvas", EditorMode::Rect { state: None }),
     ] {
         let button = document
             .get_element_by_id(id)

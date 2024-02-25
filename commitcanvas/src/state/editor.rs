@@ -5,7 +5,7 @@ use crate::draw::line::Line;
 use crate::draw::point::Point;
 
 #[derive(Debug, Clone)]
-pub struct Square {
+pub struct Rect {
     pub top: Line,
     pub left: Line,
     pub right: Line,
@@ -18,8 +18,8 @@ pub enum EditorMode {
     Arrow {
         state: Option<Line>,
     },
-    Square {
-        state: Option<Square>,
+    Rect {
+        state: Option<Rect>,
     },
     Text {
         text: Option<web_sys::SvgForeignObjectElement>,
@@ -32,7 +32,7 @@ pub struct Editor {
     mode: EditorMode,
     marker: Marker,
     lines: Vec<Line>,
-    squares: Vec<Square>,
+    squares: Vec<Rect>,
 }
 
 impl Editor {
@@ -64,7 +64,7 @@ impl Editor {
                 self.marker.set_marker(true)?;
                 self.set_active_nav_button("textCanvas")?;
             }
-            EditorMode::Square { state: _ } => {
+            EditorMode::Rect { state: _ } => {
                 self.marker.set_marker(true)?;
                 self.set_active_nav_button("squareCanvas")?;
             }
@@ -114,7 +114,7 @@ impl Editor {
                     }
                 }
             }
-            EditorMode::Square { state } => {
+            EditorMode::Rect { state } => {
                 if let Some(coords) = self.marker.nearest_marker_coords {
                     if state.is_none() {
                         let top = Line::new(
@@ -145,7 +145,7 @@ impl Editor {
                             coords.clone(),
                             "cc_square_provisional",
                         )?;
-                        *state = Some(Square {
+                        *state = Some(Rect {
                             top,
                             left,
                             right,
@@ -175,7 +175,7 @@ impl Editor {
                     line.update_end(coords)?;
                 }
             }
-            EditorMode::Square { state } => {
+            EditorMode::Rect { state } => {
                 if let (Some(state), Some(coords)) = (state, self.marker.nearest_marker_coords) {
                     let start = state.top.start;
                     state.top.update(start, Point::new(coords.x, start.y))?;
@@ -203,7 +203,7 @@ impl Editor {
                     }
                 }
             }
-            EditorMode::Square { state } => {
+            EditorMode::Rect { state } => {
                 if let Some(mut state) = state.take() {
                     if state.top.start != state.top.end && state.left.start != state.left.end {
                         state.top.set_class("cc_square")?;
