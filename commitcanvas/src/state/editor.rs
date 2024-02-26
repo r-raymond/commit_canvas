@@ -144,7 +144,7 @@ impl Editor {
             EditorMode::Normal => {}
             EditorMode::Arrow { state } => {
                 if let (Some(line), Some(coords)) = (state, self.marker.nearest_marker_coords) {
-                    line.update_end(coords)?;
+                    line.update(coords)?;
                 }
             }
             EditorMode::Rect { state } => {
@@ -163,11 +163,10 @@ impl Editor {
             EditorMode::Arrow { state } => {
                 if let Some(coords) = self.marker.nearest_marker_coords {
                     if let Some(mut line) = state.take() {
+                        line.mouseup(coords)?;
                         if coords != line.start {
-                            line.set_class("cc_arrow")?;
                             self.lines.insert(line.guid, line);
                         }
-                        self.set_mode(EditorMode::Normal)?;
                     }
                 }
             }
