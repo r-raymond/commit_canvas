@@ -3,6 +3,7 @@ use rand::Rng;
 use rand::SeedableRng;
 use std::ops::Add;
 use std::ops::Mul;
+use std::ops::Sub;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Point {
@@ -14,13 +15,6 @@ impl Point {
     pub fn new(x: i32, y: i32) -> Point {
         Point { x, y }
     }
-
-    pub fn move_by(&self, vector: &Vector) -> Point {
-        Point {
-            x: self.x + vector.x as i32,
-            y: self.y + vector.y as i32,
-        }
-    }
 }
 
 impl Add<Vector> for Point {
@@ -30,6 +24,17 @@ impl Add<Vector> for Point {
         Point {
             x: self.x + rhs.x as i32,
             y: self.y + rhs.y as i32,
+        }
+    }
+}
+
+impl Sub<&Point> for Point {
+    type Output = Vector;
+
+    fn sub(self, rhs: &Point) -> Vector {
+        Vector {
+            x: self.x as f32 - rhs.x as f32,
+            y: self.y as f32 - rhs.y as f32,
         }
     }
 }

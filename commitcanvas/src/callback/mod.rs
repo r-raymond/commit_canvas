@@ -3,6 +3,7 @@ use wasm_bindgen::JsValue;
 mod buttons;
 mod keys;
 mod mouse;
+mod resize;
 mod touch;
 
 /// Register all callback on the svg
@@ -11,5 +12,6 @@ pub fn register(document: &web_sys::Document, svg: &web_sys::SvgElement) -> Resu
     touch::register(svg)?;
     buttons::register(document)?;
     keys::register(document)?;
+    resize::register(document)?;
     Ok(())
 }

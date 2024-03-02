@@ -294,4 +294,8 @@ impl Shape for Arrow {
     fn is_removed(&self) -> bool {
         matches!(self.state, ArrowState::Removed)
     }
+
+    fn is_unselected(&self) -> bool {
+        matches!(self.state, ArrowState::Normal)
+    }
 }

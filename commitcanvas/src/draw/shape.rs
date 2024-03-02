@@ -22,4 +22,6 @@ pub trait Shape {
     fn update(&mut self, point: Point) -> Result<(), JsValue>;
 
     fn is_removed(&self) -> bool;
+
+    fn is_unselected(&self) -> bool;
 }

@@ -1,3 +1,4 @@
+use rough::geometry::Vector;
 use wasm_bindgen::{JsCast, JsValue};
 
 use super::marker::Marker;
@@ -10,6 +11,9 @@ use std::collections::HashMap;
 
 pub enum EditorMode {
     Normal,
+    Panning {
+        start: Point,
+    },
     Arrow,
     Selected {
         item: i32,
@@ -30,6 +34,7 @@ pub struct Editor {
     rects: HashMap<i32, Rect>,
     shapes: HashMap<i32, Box<dyn Shape>>,
     guid: GuidGenerator,
+    offset: Vector,
 }
 
 impl Editor {
@@ -44,6 +49,7 @@ impl Editor {
             rects: HashMap::new(),
             shapes: HashMap::new(),
             guid: GuidGenerator::new(),
+            offset: Vector::new(0f32, 0f32),
         })
     }
 
@@ -59,6 +65,10 @@ impl Editor {
                 self.set_active_nav_button(Some("arrowCanvas"))?;
             }
             EditorMode::Selected { item: _ } => {
+                self.marker.set_marker(false)?;
+                self.set_active_nav_button(None)?;
+            }
+            EditorMode::Panning { .. } => {
                 self.marker.set_marker(false)?;
                 self.set_active_nav_button(None)?;
             }
@@ -98,13 +108,20 @@ impl Editor {
 
     pub fn mousedown(&mut self, event: &web_sys::MouseEvent) -> Result<(), JsValue> {
         match &mut self.mode {
-            EditorMode::Normal => {}
+            EditorMode::Normal => {
+                let coords = Point::new(event.x(), event.y());
+                if event.button() == 2 {
+                    self.set_mode(EditorMode::Panning { start: coords })?;
+                }
+            }
             EditorMode::Selected { item } => {
                 if let Some(shape) = self.shapes.get_mut(item) {
                     if event.button() == 2 {
                         shape.cancel()?;
                         if shape.is_removed() {
                             self.shapes.remove(item);
+                            self.set_mode(EditorMode::Normal)?;
+                        } else if shape.is_unselected() {
                             self.set_mode(EditorMode::Normal)?;
                         }
                     }
@@ -151,6 +168,20 @@ impl Editor {
         self.marker.set_mouse_coords(coords)?;
         match &mut self.mode {
             EditorMode::Normal => {}
+            EditorMode::Panning { start } => {
+                self.offset = coords - start;
+                let bb = self.svg.get_bounding_client_rect();
+                self.svg.set_attribute(
+                    "viewBox",
+                    &format!(
+                        "{} {} {} {}",
+                        self.offset.x,
+                        self.offset.y,
+                        self.offset.x + bb.width() as f32,
+                        self.offset.y + bb.height() as f32
+                    ),
+                )?;
+            }
             EditorMode::Selected { item } => {
                 if let Some(shape) = self.shapes.get_mut(item) {
                     if let Some(coords) = self.marker.nearest_marker_coords {
@@ -171,11 +202,16 @@ impl Editor {
     pub fn mouseup(&mut self, _event: &web_sys::MouseEvent) -> Result<(), JsValue> {
         match &mut self.mode {
             EditorMode::Normal => {}
+            EditorMode::Panning { .. } => {
+                self.set_mode(EditorMode::Normal)?;
+            }
             EditorMode::Selected { item } => {
                 if let Some(shape) = self.shapes.get_mut(item) {
                     shape.commit()?;
                     if shape.is_removed() {
                         self.shapes.remove(item);
+                        self.set_mode(EditorMode::Normal)?;
+                    } else if shape.is_unselected() {
                         self.set_mode(EditorMode::Normal)?;
                     }
                 }
@@ -293,6 +329,15 @@ impl Editor {
     }
 
     pub fn touchstart(&mut self, _event: &web_sys::TouchEvent) -> Result<(), JsValue> {
+        Ok(())
+    }
+
+    pub fn resize(&mut self) -> Result<(), JsValue> {
+        let bb = self.svg.get_bounding_client_rect();
+        self.svg.set_attribute(
+            "viewBox",
+            &format!("{} {} {} {}", bb.x(), bb.y(), bb.width(), bb.height()),
+        )?;
         Ok(())
     }
 
