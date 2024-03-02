@@ -26,12 +26,16 @@
     @apply stroke-stone-400 stroke-2 fill-transparent;
 }
 
+.cc_arrow_select_node {
+    @apply fill-stone-400 cursor-pointer;
+}
+
 .cc_arrow {
-    @apply stroke-stone-800 stroke-2 fill-transparent;
+    @apply stroke-stone-800 stroke-2 fill-transparent cursor-pointer;
 }
 
 .cc_rect {
-    @apply stroke-stone-800 stroke-2 fill-transparent;
+    @apply stroke-stone-800 stroke-2 fill-transparent cursor-pointer;
 }
 
 .cc_nav_button {

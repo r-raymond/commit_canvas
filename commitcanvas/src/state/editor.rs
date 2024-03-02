@@ -1,16 +1,18 @@
 use wasm_bindgen::{JsCast, JsValue};
 
 use super::marker::Marker;
-use crate::draw::Line;
+use crate::draw::Arrow;
 use crate::draw::Point;
 use crate::draw::Rect;
+use crate::draw::Shape;
 use crate::state::guid::GuidGenerator;
 use std::collections::HashMap;
 
 pub enum EditorMode {
     Normal,
-    Arrow {
-        state: Option<Line>,
+    Arrow,
+    Selected {
+        item: i32,
     },
     Rect {
         state: Option<Rect>,
@@ -25,8 +27,8 @@ pub struct Editor {
     svg: web_sys::SvgElement,
     mode: EditorMode,
     marker: Marker,
-    lines: HashMap<i32, Line>,
     rects: HashMap<i32, Rect>,
+    shapes: HashMap<i32, Box<dyn Shape>>,
     guid: GuidGenerator,
 }
 
@@ -39,8 +41,8 @@ impl Editor {
             svg: svg.clone(),
             mode: EditorMode::Normal,
             marker,
-            lines: HashMap::new(),
             rects: HashMap::new(),
+            shapes: HashMap::new(),
             guid: GuidGenerator::new(),
         })
     }
@@ -50,25 +52,29 @@ impl Editor {
         match self.mode {
             EditorMode::Normal => {
                 self.marker.set_marker(false)?;
-                self.set_active_nav_button("selectCanvas")?;
+                self.set_active_nav_button(Some("selectCanvas"))?;
             }
-            EditorMode::Arrow { state: _ } => {
+            EditorMode::Arrow => {
                 self.marker.set_marker(true)?;
-                self.set_active_nav_button("arrowCanvas")?;
+                self.set_active_nav_button(Some("arrowCanvas"))?;
+            }
+            EditorMode::Selected { item: _ } => {
+                self.marker.set_marker(false)?;
+                self.set_active_nav_button(None)?;
             }
             EditorMode::Text { text: _ } => {
                 self.marker.set_marker(true)?;
-                self.set_active_nav_button("textCanvas")?;
+                self.set_active_nav_button(Some("textCanvas"))?;
             }
             EditorMode::Rect { state: _ } => {
                 self.marker.set_marker(true)?;
-                self.set_active_nav_button("rectCanvas")?;
+                self.set_active_nav_button(Some("rectCanvas"))?;
             }
         }
         Ok(())
     }
 
-    fn set_active_nav_button(&self, id: &str) -> Result<(), JsValue> {
+    fn set_active_nav_button(&self, mid: Option<&str>) -> Result<(), JsValue> {
         let buttons = self
             .document
             .get_elements_by_class_name("cc_nav_button_selected");
@@ -79,36 +85,39 @@ impl Editor {
                 .class_list()
                 .remove_1("cc_nav_button_selected")?;
         }
-        let button = self
-            .document
-            .get_element_by_id(id)
-            .expect("No button found")
-            .dyn_into::<web_sys::HtmlButtonElement>()?;
-        button.class_list().add_1("cc_nav_button_selected")?;
+        if let Some(id) = mid {
+            let button = self
+                .document
+                .get_element_by_id(id)
+                .expect("No button found")
+                .dyn_into::<web_sys::HtmlButtonElement>()?;
+            button.class_list().add_1("cc_nav_button_selected")?;
+        }
         Ok(())
     }
 
     pub fn mousedown(&mut self, event: &web_sys::MouseEvent) -> Result<(), JsValue> {
         match &mut self.mode {
             EditorMode::Normal => {}
-            EditorMode::Arrow { state } => {
-                if let Some(coords) = self.marker.nearest_marker_coords {
-                    if state.is_none() {
-                        let line = Line::new(
-                            &self.document,
-                            &self.svg,
-                            self.guid.next(),
-                            coords.clone(),
-                            coords.clone(),
-                            "cc_arrow_provisional",
-                        )?;
-                        *state = Some(line);
-                    } else {
-                        if event.button() == 2 {
-                            state.take();
+            EditorMode::Selected { item } => {
+                if let Some(shape) = self.shapes.get_mut(item) {
+                    if event.button() == 2 {
+                        shape.cancel()?;
+                        if shape.is_removed() {
+                            self.shapes.remove(item);
                             self.set_mode(EditorMode::Normal)?;
                         }
                     }
+                }
+            }
+            EditorMode::Arrow => {
+                if let Some(coords) = self.marker.nearest_marker_coords {
+                    let mut shape =
+                        Arrow::new(&self.document, &self.svg, self.guid.next(), coords.clone())?;
+                    shape.select()?;
+                    shape.modify(1)?;
+                    self.set_mode(EditorMode::Selected { item: shape.guid })?;
+                    self.shapes.insert(shape.guid, Box::new(shape));
                 }
             }
             EditorMode::Rect { state } => {
@@ -142,9 +151,11 @@ impl Editor {
         self.marker.set_mouse_coords(coords)?;
         match &mut self.mode {
             EditorMode::Normal => {}
-            EditorMode::Arrow { state } => {
-                if let (Some(line), Some(coords)) = (state, self.marker.nearest_marker_coords) {
-                    line.update(coords)?;
+            EditorMode::Selected { item } => {
+                if let Some(shape) = self.shapes.get_mut(item) {
+                    if let Some(coords) = self.marker.nearest_marker_coords {
+                        shape.update(coords)?;
+                    }
                 }
             }
             EditorMode::Rect { state } => {
@@ -160,13 +171,12 @@ impl Editor {
     pub fn mouseup(&mut self, _event: &web_sys::MouseEvent) -> Result<(), JsValue> {
         match &mut self.mode {
             EditorMode::Normal => {}
-            EditorMode::Arrow { state } => {
-                if let Some(coords) = self.marker.nearest_marker_coords {
-                    if let Some(mut line) = state.take() {
-                        line.mouseup(coords)?;
-                        if coords != line.start {
-                            self.lines.insert(line.guid, line);
-                        }
+            EditorMode::Selected { item } => {
+                if let Some(shape) = self.shapes.get_mut(item) {
+                    shape.commit()?;
+                    if shape.is_removed() {
+                        self.shapes.remove(item);
+                        self.set_mode(EditorMode::Normal)?;
                     }
                 }
             }
@@ -265,11 +275,19 @@ impl Editor {
     }
 
     pub fn select(&mut self, item: i32) -> Result<(), JsValue> {
-        if let Some(line) = self.lines.remove(&item) {
-            self.set_mode(EditorMode::Arrow { state: Some(line) })?;
+        if let Some(shape) = self.shapes.get_mut(&item) {
+            shape.select()?;
+            self.set_mode(EditorMode::Selected { item })?;
         }
         if let Some(rect) = self.rects.remove(&item) {
             self.set_mode(EditorMode::Rect { state: Some(rect) })?;
+        }
+        Ok(())
+    }
+
+    pub fn modify(&mut self, identifier: i32) -> Result<(), JsValue> {
+        if let EditorMode::Selected { item } = self.mode {
+            self.shapes.get_mut(&item).unwrap().modify(identifier)?;
         }
         Ok(())
     }

@@ -19,7 +19,7 @@ pub fn register(document: &web_sys::Document) -> Result<(), JsValue> {
                 let key = event.key();
                 let mode = match key.as_str() {
                     "s" => EditorMode::Normal,
-                    "a" => EditorMode::Arrow { state: None },
+                    "a" => EditorMode::Arrow,
                     "t" => EditorMode::Text { text: None },
                     "r" => EditorMode::Rect { state: None },
                     _ => return Ok(()),

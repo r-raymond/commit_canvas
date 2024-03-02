@@ -24,7 +24,7 @@ pub fn register(document: &web_sys::Document) -> Result<(), JsValue> {
                 move |event: web_sys::MouseEvent| -> Result<(), JsValue> {
                     let mode = match id {
                         "selectCanvas" => EditorMode::Normal,
-                        "arrowCanvas" => EditorMode::Arrow { state: None },
+                        "arrowCanvas" => EditorMode::Arrow,
                         "textCanvas" => EditorMode::Text { text: None },
                         "rectCanvas" => EditorMode::Rect { state: None },
                         _ => panic!("Unknown button id"),
