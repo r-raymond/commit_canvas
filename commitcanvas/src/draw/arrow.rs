@@ -145,6 +145,7 @@ impl Shape for Arrow {
     {
         let path = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
         path.set_attribute("class", "cc_arrow")?;
+        path.set_attribute("marker-end", "url(#cc_arrow_head)")?;
         svg.append_child(&path)?;
         let closure = Closure::wrap(Box::new(move |_event: web_sys::MouseEvent| {
             STATE.with(|s| -> Result<_, JsValue> {
@@ -183,10 +184,14 @@ impl Shape for Arrow {
             ArrowState::MovingStart { fallback, .. } => {
                 self.update(fallback)?;
                 self.path.set_attribute("class", "cc_arrow")?;
+                self.path
+                    .set_attribute("marker-end", "url(#cc_arrow_head)")?;
             }
             ArrowState::MovingEnd { fallback, .. } => {
                 self.update(fallback)?;
                 self.path.set_attribute("class", "cc_arrow")?;
+                self.path
+                    .set_attribute("marker-end", "url(#cc_arrow_head)")?;
             }
             _ => {}
         };
@@ -229,6 +234,8 @@ impl Shape for Arrow {
                         fallback: self.start,
                     };
                     self.path.set_attribute("class", "cc_arrow_provisional")?;
+                    self.path
+                        .set_attribute("marker-end", "url(#cc_arrow_head_provisional)")?;
                 } else {
                     self.state = ArrowState::MovingEnd {
                         start: std::mem::take(start),
@@ -236,6 +243,8 @@ impl Shape for Arrow {
                         fallback: self.end,
                     };
                     self.path.set_attribute("class", "cc_arrow_provisional")?;
+                    self.path
+                        .set_attribute("marker-end", "url(#cc_arrow_head_provisional)")?;
                 }
             }
             _ => {}
@@ -254,6 +263,8 @@ impl Shape for Arrow {
                         end: std::mem::take(end),
                     };
                     self.path.set_attribute("class", "cc_arrow")?;
+                    self.path
+                        .set_attribute("marker-end", "url(#cc_arrow_head)")?;
                 }
             }
             ArrowState::MovingEnd { start, end, .. } => {
@@ -265,6 +276,8 @@ impl Shape for Arrow {
                         end: std::mem::take(end),
                     };
                     self.path.set_attribute("class", "cc_arrow")?;
+                    self.path
+                        .set_attribute("marker-end", "url(#cc_arrow_head)")?;
                 }
             }
             _ => {}

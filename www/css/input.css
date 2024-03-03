@@ -11,6 +11,14 @@
     @apply fill-stone-300;
 }
 
+#cc_arrow_head {
+    @apply fill-stone-800;
+}
+
+#cc_arrow_head_provisional {
+    @apply fill-stone-400;
+}
+
 .cc_app {
 }
 
