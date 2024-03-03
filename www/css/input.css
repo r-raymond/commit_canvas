@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 
-#nearest_marker {
-    @apply fill-stone-400;
+#cc_nearest_marker {
+    @apply fill-primary;
 }
 
 #pattern_circle {
@@ -35,7 +35,7 @@
 }
 
 .cc_arrow_select_node {
-    @apply fill-stone-400 cursor-pointer;
+    @apply fill-primary cursor-pointer;
 }
 
 .cc_arrow {
@@ -59,7 +59,7 @@
 }
 
 .cc_nav_button_selected {
-    @apply bg-white;
+    @apply bg-red-100;
 }
 
 .cc_textarea {

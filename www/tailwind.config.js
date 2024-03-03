@@ -5,7 +5,11 @@ module.exports = {
     fontFamily: {
       sans: ["Itim"],
     },
-    extend: {},
+    extend: {
+      colors: {
+        primary: "#FCA5A5",
+      },
+    },
   },
   plugins: [],
 };

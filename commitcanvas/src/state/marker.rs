@@ -58,7 +58,7 @@ impl Marker {
             .document
             .create_element_ns(Some("http://www.w3.org/2000/svg"), "circle")?;
         marker.set_attribute("r", "3")?;
-        marker.set_id("nearest_marker");
+        marker.set_id("cc_nearest_marker");
         self.svg.append_child(&marker)?;
         self.nearest_marker = Some(marker);
         Ok(())
