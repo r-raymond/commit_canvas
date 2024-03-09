@@ -100,14 +100,20 @@ impl SelectState {
         svg: &web_sys::SvgElement,
         start: Point,
         end: Point,
+        with_rect: bool,
     ) -> Result<Self, JsValue> {
-        let rect = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "rect")?;
-        rect.set_attribute("x", (std::cmp::min(start.x, end.x)).to_string().as_str())?;
-        rect.set_attribute("y", (std::cmp::min(start.y, end.y)).to_string().as_str())?;
-        rect.set_attribute("width", (end.x - start.x).abs().to_string().as_str())?;
-        rect.set_attribute("height", (end.y - start.y).abs().to_string().as_str())?;
-        rect.set_attribute("class", "cc_arrow_select_rect")?;
-        svg.append_child(&rect)?;
+        let rect = if with_rect {
+            let rect = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "rect")?;
+            rect.set_attribute("x", (std::cmp::min(start.x, end.x)).to_string().as_str())?;
+            rect.set_attribute("y", (std::cmp::min(start.y, end.y)).to_string().as_str())?;
+            rect.set_attribute("width", (end.x - start.x).abs().to_string().as_str())?;
+            rect.set_attribute("height", (end.y - start.y).abs().to_string().as_str())?;
+            rect.set_attribute("class", "cc_arrow_select_rect")?;
+            svg.append_child(&rect)?;
+            Some(rect)
+        } else {
+            None
+        };
 
         let start = SelectNode::new(
             document,
@@ -124,11 +130,7 @@ impl SelectState {
             CallbackId::End,
         )?;
 
-        Ok(Self {
-            start,
-            end,
-            rect: Some(rect),
-        })
+        Ok(Self { start, end, rect })
     }
 
     pub fn update(&mut self, start: Point, end: Point) -> Result<(), JsValue> {

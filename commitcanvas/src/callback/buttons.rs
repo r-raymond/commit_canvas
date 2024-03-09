@@ -26,7 +26,7 @@ pub fn register(document: &web_sys::Document) -> Result<(), JsValue> {
                         "selectCanvas" => EditorMode::Normal,
                         "arrowCanvas" => EditorMode::Arrow,
                         "textCanvas" => EditorMode::Text { text: None },
-                        "rectCanvas" => EditorMode::Rect { state: None },
+                        "rectCanvas" => EditorMode::Rect,
                         _ => panic!("Unknown button id"),
                     };
                     click_helper(event, mode)

@@ -15,11 +15,9 @@ pub enum EditorMode {
         start: Point,
     },
     Arrow,
+    Rect,
     Selected {
         item: i32,
-    },
-    Rect {
-        state: Option<Rect>,
     },
     Text {
         text: Option<web_sys::SvgForeignObjectElement>,
@@ -31,7 +29,6 @@ pub struct Editor {
     svg: web_sys::SvgElement,
     mode: EditorMode,
     marker: Marker,
-    rects: HashMap<i32, Rect>,
     shapes: HashMap<i32, Box<dyn Shape>>,
     guid: GuidGenerator,
     offset: Vector,
@@ -46,7 +43,6 @@ impl Editor {
             svg: svg.clone(),
             mode: EditorMode::Normal,
             marker,
-            rects: HashMap::new(),
             shapes: HashMap::new(),
             guid: GuidGenerator::new(),
             offset: Vector::new(0f32, 0f32),
@@ -64,6 +60,10 @@ impl Editor {
                 self.marker.set_marker(true)?;
                 self.set_active_nav_button(Some("arrowCanvas"))?;
             }
+            EditorMode::Rect => {
+                self.marker.set_marker(true)?;
+                self.set_active_nav_button(Some("rectCanvas"))?;
+            }
             EditorMode::Selected { item: _ } => {
                 self.marker.set_marker(false)?;
                 self.set_active_nav_button(None)?;
@@ -75,10 +75,6 @@ impl Editor {
             EditorMode::Text { text: _ } => {
                 self.marker.set_marker(true)?;
                 self.set_active_nav_button(Some("textCanvas"))?;
-            }
-            EditorMode::Rect { state: _ } => {
-                self.marker.set_marker(true)?;
-                self.set_active_nav_button(Some("rectCanvas"))?;
             }
         }
         Ok(())
@@ -137,24 +133,14 @@ impl Editor {
                     self.shapes.insert(shape.guid, Box::new(shape));
                 }
             }
-            EditorMode::Rect { state } => {
+            EditorMode::Rect => {
                 if let Some(coords) = self.marker.nearest_marker_coords {
-                    if state.is_none() {
-                        let rect = Rect::new(
-                            &self.document,
-                            &self.svg,
-                            self.guid.next(),
-                            coords.clone(),
-                            coords.clone(),
-                            "cc_rect_provisional",
-                        )?;
-                        *state = Some(rect);
-                    } else {
-                        if event.button() == 2 {
-                            state.take();
-                            self.set_mode(EditorMode::Normal)?;
-                        }
-                    }
+                    let mut shape =
+                        Rect::new(&self.document, &self.svg, self.guid.next(), coords.clone())?;
+                    shape.select()?;
+                    shape.modify(1)?;
+                    self.set_mode(EditorMode::Selected { item: shape.guid })?;
+                    self.shapes.insert(shape.guid, Box::new(shape));
                 }
             }
             _ => {}
@@ -189,11 +175,6 @@ impl Editor {
                     }
                 }
             }
-            EditorMode::Rect { state } => {
-                if let (Some(state), Some(coords)) = (state, self.marker.nearest_marker_coords) {
-                    state.update_end(coords)?;
-                }
-            }
             _ => {}
         }
         Ok(())
@@ -214,15 +195,6 @@ impl Editor {
                     } else if shape.is_unselected() {
                         self.set_mode(EditorMode::Normal)?;
                     }
-                }
-            }
-            EditorMode::Rect { state } => {
-                if let Some(mut state) = state.take() {
-                    if state.start != state.end {
-                        state.set_class("cc_rect")?;
-                        self.rects.insert(state.guid, state);
-                    }
-                    self.set_mode(EditorMode::Normal)?;
                 }
             }
             _ => {}
@@ -314,9 +286,6 @@ impl Editor {
         if let Some(shape) = self.shapes.get_mut(&item) {
             shape.select()?;
             self.set_mode(EditorMode::Selected { item })?;
-        }
-        if let Some(rect) = self.rects.remove(&item) {
-            self.set_mode(EditorMode::Rect { state: Some(rect) })?;
         }
         Ok(())
     }

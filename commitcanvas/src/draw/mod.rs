@@ -1,5 +1,6 @@
 mod arrow;
 pub mod rect;
+pub mod select;
 pub mod shape;
 
 pub use arrow::Arrow;

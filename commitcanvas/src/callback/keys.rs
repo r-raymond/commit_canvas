@@ -21,7 +21,7 @@ pub fn register(document: &web_sys::Document) -> Result<(), JsValue> {
                     "s" => EditorMode::Normal,
                     "a" => EditorMode::Arrow,
                     "t" => EditorMode::Text { text: None },
-                    "r" => EditorMode::Rect { state: None },
+                    "r" => EditorMode::Rect,
                     _ => return Ok(()),
                 };
                 key_helper(event, mode)

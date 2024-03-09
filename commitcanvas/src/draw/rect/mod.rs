@@ -1,5 +1,4 @@
 use crate::draw::select::{CallbackId, SelectState};
-use crate::draw::shape::Shape;
 use crate::state::STATE;
 use rough::Line as RoughLine;
 use rough::Point;
@@ -7,7 +6,9 @@ use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 
-enum ArrowState {
+use super::Shape;
+
+enum RectState {
     Normal,
     Removed,
     Selected {
@@ -20,43 +21,33 @@ enum ArrowState {
     },
 }
 
-impl Drop for Arrow {
-    fn drop(&mut self) {
-        self.path.remove();
-    }
-}
-
-pub struct Arrow {
+pub struct Rect {
     document: web_sys::Document,
     svg: web_sys::SvgElement,
-    state: ArrowState,
+    state: RectState,
     path: web_sys::Element,
     pub guid: i32,
     start: Point,
     end: Point,
     #[allow(dead_code)]
-    callback: Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>,
+    callback: Option<Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>>,
 }
 
-impl Arrow {
-    fn render(&self) -> String {
-        RoughLine::new(self.start, self.end).to_svg_path(10.0)
+impl Drop for Rect {
+    fn drop(&mut self) {
+        self.path.remove();
     }
 }
 
-impl Shape for Arrow {
+impl Shape for Rect {
     fn new(
         document: &web_sys::Document,
         svg: &web_sys::SvgElement,
         guid: i32,
         start: Point,
-    ) -> Result<Self, JsValue>
-    where
-        Self: Sized,
-    {
+    ) -> Result<Self, JsValue> {
         let path = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
-        path.set_attribute("class", "cc_arrow")?;
-        path.set_attribute("marker-end", "url(#cc_arrow_head)")?;
+        path.set_attribute("class", "cc_rect_provisional")?;
         svg.append_child(&path)?;
         let closure = Closure::wrap(Box::new(move |_event: web_sys::MouseEvent| {
             STATE.with(|s| -> Result<_, JsValue> {
@@ -69,45 +60,43 @@ impl Shape for Arrow {
         })
             as Box<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>);
         path.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
-        Ok(Arrow {
+        Ok(Self {
             document: document.clone(),
             svg: svg.clone(),
-            state: ArrowState::Normal,
-            guid,
+            state: RectState::Normal,
             start,
-            path,
             end: start,
-            callback: closure,
+            path,
+            guid,
+            callback: Some(closure),
         })
     }
 
     fn select(&mut self) -> Result<(), JsValue> {
-        if let ArrowState::Normal = self.state {
-            let select = SelectState::new(&self.document, &self.svg, self.start, self.end, true)?;
-            self.state = ArrowState::Selected { select };
+        if let RectState::Normal = self.state {
+            let select = SelectState::new(&self.document, &self.svg, self.start, self.end, false)?;
+            self.state = RectState::Selected { select };
         }
         Ok(())
     }
 
     fn cancel(&mut self) -> Result<(), JsValue> {
         match self.state {
-            ArrowState::Moving { fallback, .. } => {
+            RectState::Moving { fallback, .. } => {
                 self.update(fallback)?;
-                self.path.set_attribute("class", "cc_arrow")?;
-                self.path
-                    .set_attribute("marker-end", "url(#cc_arrow_head)")?;
+                self.path.set_attribute("class", "cc_rect")?;
             }
             _ => {}
-        };
+        }
         match &mut self.state {
-            ArrowState::Selected { .. } => {
-                self.state = ArrowState::Normal;
+            RectState::Selected { .. } => {
+                self.state = RectState::Normal;
             }
-            ArrowState::Moving { select, .. } => {
+            RectState::Moving { select, .. } => {
                 if self.start == self.end {
-                    self.state = ArrowState::Removed;
+                    self.state = RectState::Removed;
                 } else {
-                    self.state = ArrowState::Selected {
+                    self.state = RectState::Selected {
                         select: std::mem::take(select),
                     };
                 }
@@ -119,19 +108,17 @@ impl Shape for Arrow {
 
     fn modify(&mut self, identifier: i32) -> Result<(), JsValue> {
         match &mut self.state {
-            ArrowState::Selected { select } => {
+            RectState::Selected { select } => {
                 if let Some(fallback) = match identifier.try_into()? {
                     CallbackId::Start => Some(self.start),
                     CallbackId::End => Some(self.end),
                 } {
-                    self.state = ArrowState::Moving {
+                    self.state = RectState::Moving {
                         select_id: identifier.try_into()?,
                         select: std::mem::take(select),
                         fallback,
                     };
-                    self.path.set_attribute("class", "cc_arrow_provisional")?;
-                    self.path
-                        .set_attribute("marker-end", "url(#cc_arrow_head_provisional)")?;
+                    self.path.set_attribute("class", "cc_rect_provisional")?;
                 }
             }
             _ => {}
@@ -139,18 +126,24 @@ impl Shape for Arrow {
         Ok(())
     }
 
+    fn is_removed(&self) -> bool {
+        matches!(self.state, RectState::Removed)
+    }
+
+    fn is_unselected(&self) -> bool {
+        matches!(self.state, RectState::Normal)
+    }
+
     fn commit(&mut self) -> Result<(), JsValue> {
         match &mut self.state {
-            ArrowState::Moving { select, .. } => {
+            RectState::Moving { select, .. } => {
                 if self.start == self.end {
-                    self.state = ArrowState::Removed;
+                    self.state = RectState::Removed;
                 } else {
-                    self.state = ArrowState::Selected {
+                    self.state = RectState::Selected {
                         select: std::mem::take(select),
                     };
-                    self.path.set_attribute("class", "cc_arrow")?;
-                    self.path
-                        .set_attribute("marker-end", "url(#cc_arrow_head)")?;
+                    self.path.set_attribute("class", "cc_rect")?;
                 }
             }
             _ => {}
@@ -160,7 +153,7 @@ impl Shape for Arrow {
 
     fn update(&mut self, point: Point) -> Result<(), JsValue> {
         match &mut self.state {
-            ArrowState::Moving {
+            RectState::Moving {
                 select_id, select, ..
             } => {
                 match select_id {
@@ -178,12 +171,16 @@ impl Shape for Arrow {
         }
         Ok(())
     }
+}
 
-    fn is_removed(&self) -> bool {
-        matches!(self.state, ArrowState::Removed)
-    }
-
-    fn is_unselected(&self) -> bool {
-        matches!(self.state, ArrowState::Normal)
+impl Rect {
+    fn render(&self) -> String {
+        format!(
+            "{} {} {} {}",
+            RoughLine::new(self.start, Point::new(self.end.x, self.start.y)).to_svg_path(10.0),
+            RoughLine::new(Point::new(self.end.x, self.start.y), self.end).to_svg_path(10.0),
+            RoughLine::new(self.end, Point::new(self.start.x, self.end.y)).to_svg_path(10.0),
+            RoughLine::new(Point::new(self.start.x, self.end.y), self.start).to_svg_path(10.0),
+        )
     }
 }
