@@ -1,4 +1,3 @@
-use crate::log;
 use crate::state::STATE;
 use rough::Point;
 use wasm_bindgen::closure::Closure;
