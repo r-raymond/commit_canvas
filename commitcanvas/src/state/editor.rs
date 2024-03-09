@@ -50,6 +50,14 @@ impl Editor {
     }
 
     pub fn set_mode(&mut self, mode: EditorMode) -> Result<(), JsValue> {
+        match self.mode {
+            EditorMode::Selected { item } => {
+                if let Some(shape) = self.shapes.get_mut(&item) {
+                    shape.cancel()?;
+                }
+            }
+            _ => {}
+        }
         self.mode = mode;
         match self.mode {
             EditorMode::Normal => {
