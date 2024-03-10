@@ -171,8 +171,8 @@ impl Editor {
                         "{} {} {} {}",
                         self.offset.x,
                         self.offset.y,
-                        self.offset.x + bb.width() as f32,
-                        self.offset.y + bb.height() as f32
+                        bb.width() as f32,
+                        bb.height() as f32
                     ),
                 )?;
             }
