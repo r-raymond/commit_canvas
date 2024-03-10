@@ -9,6 +9,8 @@ use wasm_bindgen::JsValue;
 pub enum CallbackId {
     Start = 0,
     End = 1,
+    Thickness = 2,
+    Straightness = 3,
 }
 
 impl TryFrom<i32> for CallbackId {
@@ -58,7 +60,6 @@ impl SelectNode {
         node.set_attribute("r", "5")?;
         node.set_attribute("class", "cc_arrow_select_node")?;
         svg.append_child(&node)?;
-        let callback_id = i32::from(callback_id);
 
         let callback = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
             STATE.with(|s| -> Result<_, JsValue> {
@@ -82,6 +83,10 @@ impl SelectNode {
 
 struct ContextMenu {
     menu: web_sys::SvgForeignObjectElement,
+    #[allow(dead_code)]
+    callback_thickness: Option<Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>>,
+    #[allow(dead_code)]
+    callback_straightness: Option<Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>>,
 }
 
 impl Drop for ContextMenu {
@@ -162,10 +167,25 @@ impl SelectState {
             path2.set_attribute("fill", "none")?;
             thickness_svg.append_child(&path1)?;
             thickness_svg.append_child(&path2)?;
+            let callback_thickness = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+                STATE.with(|s| -> Result<_, JsValue> {
+                    let mut state_ref = s.borrow_mut();
+                    let state = state_ref.as_mut().ok_or("state is None")?;
+                    state.editor.modify(CallbackId::Thickness)?;
+                    event.prevent_default();
+                    Ok(())
+                })?;
+                Ok(())
+            })
+                as Box<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>);
 
             let button_1 = document.create_element("button")?;
             button_1.append_child(&thickness_svg)?;
             button_1.set_attribute("class", "cc_context_menu_button cc_context_menu_button_top")?;
+            button_1.add_event_listener_with_callback(
+                "click",
+                callback_thickness.as_ref().unchecked_ref(),
+            )?;
             div.append_child(&button_1)?;
 
             let straightness_svg =
@@ -186,6 +206,17 @@ impl SelectState {
             path2.set_attribute("fill", "none")?;
             straightness_svg.append_child(&path1)?;
             straightness_svg.append_child(&path2)?;
+            let callback_straightness = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+                STATE.with(|s| -> Result<_, JsValue> {
+                    let mut state_ref = s.borrow_mut();
+                    let state = state_ref.as_mut().ok_or("state is None")?;
+                    state.editor.modify(CallbackId::Straightness)?;
+                    event.prevent_default();
+                    Ok(())
+                })?;
+                Ok(())
+            })
+                as Box<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>);
 
             let button_2 = document.create_element("button")?;
             button_2.append_child(&straightness_svg)?;
@@ -193,10 +224,18 @@ impl SelectState {
                 "class",
                 "cc_context_menu_button cc_context_menu_button_bottom",
             )?;
+            button_2.add_event_listener_with_callback(
+                "click",
+                callback_straightness.as_ref().unchecked_ref(),
+            )?;
             div.append_child(&button_2)?;
             svg.append_child(&menu)?;
             let fo = menu.dyn_into::<web_sys::SvgForeignObjectElement>()?;
-            Some(ContextMenu { menu: fo })
+            Some(ContextMenu {
+                menu: fo,
+                callback_thickness: Some(callback_thickness),
+                callback_straightness: Some(callback_straightness),
+            })
         };
 
         let start = SelectNode::new(

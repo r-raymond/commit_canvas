@@ -111,21 +111,28 @@ impl Shape for Rect {
         Ok(())
     }
 
-    fn modify(&mut self, identifier: i32) -> Result<(), JsValue> {
+    fn modify(&mut self, identifier: CallbackId) -> Result<(), JsValue> {
         match &mut self.state {
-            RectState::Selected { select } => {
-                if let Some(fallback) = match identifier.try_into()? {
-                    CallbackId::Start => Some(self.start),
-                    CallbackId::End => Some(self.end),
-                } {
+            RectState::Selected { select } => match identifier {
+                CallbackId::Start => {
                     self.state = RectState::Moving {
-                        select_id: identifier.try_into()?,
+                        select_id: identifier,
                         select: std::mem::take(select),
-                        fallback,
+                        fallback: self.start,
                     };
                     self.path.set_attribute("class", "cc_rect_provisional")?;
                 }
-            }
+                CallbackId::End => {
+                    self.state = RectState::Moving {
+                        select_id: identifier,
+                        select: std::mem::take(select),
+                        fallback: self.end,
+                    };
+                    self.path.set_attribute("class", "cc_rect_provisional")?;
+                }
+                CallbackId::Thickness => {}
+                CallbackId::Straightness => {}
+            },
             _ => {}
         }
         Ok(())
@@ -168,6 +175,7 @@ impl Shape for Rect {
                     CallbackId::End => {
                         self.end = point;
                     }
+                    _ => {}
                 }
                 select.update(self.start, self.end)?;
                 self.path.set_attribute("d", self.render().as_str())?;

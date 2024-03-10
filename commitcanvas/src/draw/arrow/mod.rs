@@ -34,13 +34,15 @@ pub struct Arrow {
     pub guid: i32,
     start: Point,
     end: Point,
+    thickness: f32,
+    roughness: f32,
     #[allow(dead_code)]
     callback: Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>,
 }
 
 impl Arrow {
     fn render(&self) -> String {
-        RoughLine::new(self.start, self.end).to_svg_path(10.0)
+        RoughLine::new(self.start, self.end).to_svg_path(self.roughness)
     }
 }
 
@@ -57,6 +59,7 @@ impl Shape for Arrow {
         let path = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
         path.set_attribute("class", "cc_arrow")?;
         path.set_attribute("marker-end", "url(#cc_arrow_head)")?;
+        path.set_attribute("stroke-width", 2.0.to_string().as_str())?;
         svg.append_child(&path)?;
         let closure = Closure::wrap(Box::new(move |_event: web_sys::MouseEvent| {
             STATE.with(|s| -> Result<_, JsValue> {
@@ -76,6 +79,8 @@ impl Shape for Arrow {
             guid,
             start,
             path,
+            thickness: 2.0,
+            roughness: 5.0,
             end: start,
             callback: closure,
         })
@@ -117,25 +122,53 @@ impl Shape for Arrow {
         Ok(())
     }
 
-    fn modify(&mut self, identifier: i32) -> Result<(), JsValue> {
+    fn modify(&mut self, identifier: CallbackId) -> Result<(), JsValue> {
         match &mut self.state {
-            ArrowState::Selected { select } => {
-                if let Some(fallback) = match identifier.try_into()? {
-                    CallbackId::Start => Some(self.start),
-                    CallbackId::End => Some(self.end),
-                } {
+            ArrowState::Selected { select } => match identifier {
+                CallbackId::Start => {
                     self.state = ArrowState::Moving {
-                        select_id: identifier.try_into()?,
+                        select_id: identifier,
                         select: std::mem::take(select),
-                        fallback,
+                        fallback: self.start,
                     };
                     self.path.set_attribute("class", "cc_arrow_provisional")?;
                     self.path
                         .set_attribute("marker-end", "url(#cc_arrow_head_provisional)")?;
                 }
-            }
+                CallbackId::End => {
+                    self.state = ArrowState::Moving {
+                        select_id: identifier,
+                        select: std::mem::take(select),
+                        fallback: self.end,
+                    };
+                    self.path.set_attribute("class", "cc_arrow_provisional")?;
+                    self.path
+                        .set_attribute("marker-end", "url(#cc_arrow_head_provisional)")?;
+                }
+                CallbackId::Thickness => {
+                    if self.thickness == 1.4 {
+                        self.thickness = 2.0;
+                    } else if self.thickness == 2.0 {
+                        self.thickness = 3.0;
+                    } else {
+                        self.thickness = 1.4;
+                    }
+                    self.path
+                        .set_attribute("stroke-width", self.thickness.to_string().as_str())?;
+                }
+                CallbackId::Straightness => {
+                    if self.roughness == 5.0 {
+                        self.roughness = 10.0;
+                    } else if self.roughness == 10.0 {
+                        self.roughness = 0.0;
+                    } else {
+                        self.roughness = 5.0;
+                    }
+                    self.path.set_attribute("d", self.render().as_str())?;
+                }
+            },
             _ => {}
-        }
+        };
         Ok(())
     }
 
@@ -170,6 +203,7 @@ impl Shape for Arrow {
                     CallbackId::End => {
                         self.end = point;
                     }
+                    _ => {}
                 }
                 select.update(self.start, self.end)?;
                 self.path.set_attribute("d", self.render().as_str())?;

@@ -35,7 +35,7 @@
 }
 
 .cc_arrow_provisional {
-    @apply stroke-stone-400 stroke-2 fill-transparent;
+    @apply stroke-stone-400 fill-transparent;
 }
 
 .cc_rect_provisional {
@@ -47,7 +47,7 @@
 }
 
 .cc_arrow {
-    @apply stroke-stone-800 stroke-2 fill-transparent cursor-pointer;
+    @apply stroke-stone-800 fill-transparent cursor-pointer;
 }
 
 .cc_rect {

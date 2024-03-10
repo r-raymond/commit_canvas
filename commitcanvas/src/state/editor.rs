@@ -2,6 +2,7 @@ use rough::geometry::Vector;
 use wasm_bindgen::{JsCast, JsValue};
 
 use super::marker::Marker;
+use crate::draw::select::CallbackId;
 use crate::draw::Arrow;
 use crate::draw::Point;
 use crate::draw::Rect;
@@ -142,7 +143,7 @@ impl Editor {
                     let mut shape =
                         Arrow::new(&self.document, &self.svg, self.guid.next(), coords.clone())?;
                     shape.select()?;
-                    shape.modify(1)?;
+                    shape.modify(CallbackId::End)?;
                     self.set_mode(EditorMode::Selected { item: shape.guid })?;
                     self.shapes.insert(shape.guid, Box::new(shape));
                 }
@@ -152,7 +153,7 @@ impl Editor {
                     let mut shape =
                         Rect::new(&self.document, &self.svg, self.guid.next(), coords.clone())?;
                     shape.select()?;
-                    shape.modify(1)?;
+                    shape.modify(CallbackId::End)?;
                     self.set_mode(EditorMode::Selected { item: shape.guid })?;
                     self.shapes.insert(shape.guid, Box::new(shape));
                 }
@@ -305,7 +306,7 @@ impl Editor {
         Ok(())
     }
 
-    pub fn modify(&mut self, identifier: i32) -> Result<(), JsValue> {
+    pub fn modify(&mut self, identifier: CallbackId) -> Result<(), JsValue> {
         if let EditorMode::Selected { item } = self.mode {
             self.shapes.get_mut(&item).unwrap().modify(identifier)?;
         }

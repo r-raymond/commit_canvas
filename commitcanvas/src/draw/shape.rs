@@ -1,3 +1,4 @@
+use crate::draw::select::CallbackId;
 use rough::Point;
 use wasm_bindgen::JsValue;
 
@@ -17,7 +18,7 @@ pub trait Shape {
 
     fn cancel(&mut self) -> Result<(), JsValue>;
 
-    fn modify(&mut self, identifier: i32) -> Result<(), JsValue>;
+    fn modify(&mut self, identifier: CallbackId) -> Result<(), JsValue>;
 
     fn commit(&mut self) -> Result<(), JsValue>;
 
