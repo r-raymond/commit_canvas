@@ -13,6 +13,8 @@ pub trait Shape {
 
     fn select(&mut self) -> Result<(), JsValue>;
 
+    fn unselect(&mut self) -> Result<(), JsValue>;
+
     fn cancel(&mut self) -> Result<(), JsValue>;
 
     fn modify(&mut self, identifier: i32) -> Result<(), JsValue>;

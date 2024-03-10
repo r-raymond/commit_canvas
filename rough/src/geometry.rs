@@ -17,10 +17,10 @@ impl Point {
     }
 }
 
-impl Add<Vector> for Point {
+impl Add<&Vector> for Point {
     type Output = Point;
 
-    fn add(self, rhs: Vector) -> Point {
+    fn add(self, rhs: &Vector) -> Point {
         Point {
             x: self.x + rhs.x as i32,
             y: self.y + rhs.y as i32,
@@ -49,6 +49,7 @@ pub struct Line {
     pub end: Point,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct Vector {
     pub x: f32,
     pub y: f32,
@@ -126,8 +127,9 @@ impl Line {
         let along = Vector::from_points(&start, &end).normalize();
         let orth = Vector::new(-along.y, along.x);
 
-        let mid_point = self.start + 0.5 * length * &along + mid_point_offset * &orth;
-        let control_point = self.start + (0.75 + dis_along) * length * &along + dis_orth * &orth;
+        let mid_point = self.start + &(0.5 * length * &along) + &(mid_point_offset * &orth);
+        let control_point =
+            self.start + &((0.75 + dis_along) * length * &along) + &(dis_orth * &orth);
 
         return [start, mid_point, control_point, end];
     }

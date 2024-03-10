@@ -1,3 +1,5 @@
+use crate::log;
+use rough::geometry::Vector;
 use wasm_bindgen::JsValue;
 
 use crate::draw::Point;
@@ -11,6 +13,7 @@ pub struct Marker {
     pub nearest_marker_coords: Option<Point>,
     mouse_coords: Option<Point>,
     marker_on: bool,
+    pub offset: Vector,
 }
 
 impl Marker {
@@ -22,11 +25,16 @@ impl Marker {
             nearest_marker_coords: None,
             mouse_coords: None,
             marker_on: false,
+            offset: Vector::new(0.0, 0.0),
         }
     }
 
     pub fn set_mouse_coords(&mut self, coords: Point) -> Result<(), JsValue> {
+        log(self.offset.x as usize);
+        log(coords.x as usize);
         self.mouse_coords = Some(coords);
+        let coords = coords + &self.offset;
+        log(coords.x as usize);
         self.nearest_marker_coords = Some(Point::new(
             ((coords.x - PIXEL_STEP) as f32 / 12.0).round() as i32 * PIXEL_STEP * 2 + PIXEL_STEP,
             ((coords.y - PIXEL_STEP) as f32 / 12.0).round() as i32 * PIXEL_STEP * 2 + PIXEL_STEP,

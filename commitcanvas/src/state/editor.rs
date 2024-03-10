@@ -53,7 +53,7 @@ impl Editor {
         match self.mode {
             EditorMode::Selected { item } => {
                 if let Some(shape) = self.shapes.get_mut(&item) {
-                    shape.cancel()?;
+                    shape.unselect()?;
                 }
             }
             _ => {}
@@ -114,7 +114,7 @@ impl Editor {
         match &mut self.mode {
             EditorMode::Normal => {
                 let coords = Point::new(event.x(), event.y());
-                if event.button() == 2 {
+                if event.button() == 1 {
                     self.set_mode(EditorMode::Panning { start: coords })?;
                 }
             }
@@ -193,6 +193,7 @@ impl Editor {
             EditorMode::Normal => {}
             EditorMode::Panning { .. } => {
                 self.set_mode(EditorMode::Normal)?;
+                self.marker.offset = self.offset.clone();
             }
             EditorMode::Selected { item } => {
                 if let Some(shape) = self.shapes.get_mut(item) {

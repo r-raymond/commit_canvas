@@ -106,6 +106,11 @@ impl Shape for Rect {
         Ok(())
     }
 
+    fn unselect(&mut self) -> Result<(), JsValue> {
+        self.state = RectState::Normal;
+        Ok(())
+    }
+
     fn modify(&mut self, identifier: i32) -> Result<(), JsValue> {
         match &mut self.state {
             RectState::Selected { select } => {

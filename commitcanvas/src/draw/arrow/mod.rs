@@ -179,6 +179,11 @@ impl Shape for Arrow {
         Ok(())
     }
 
+    fn unselect(&mut self) -> Result<(), JsValue> {
+        self.state = ArrowState::Normal;
+        Ok(())
+    }
+
     fn is_removed(&self) -> bool {
         matches!(self.state, ArrowState::Removed)
     }
