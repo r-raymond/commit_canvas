@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 
+.cc_icon {
+    @apply fill-stone-700;
+}
+
 #cc_nearest_marker {
     @apply fill-primary;
 }
@@ -63,7 +67,7 @@
 }
 
 .cc_context_menu_button {
-    @apply px-2 py-2 bg-stone-100 hover:bg-stone-200 focus:outline-none text-stone-800 border-stone-400 border-l border-b border-r w-12;
+    @apply px-2 py-2 bg-stone-100 hover:bg-stone-200 focus:outline-none text-stone-800 border-stone-400 border-l border-b border-r w-10;
 }
 
 .cc_context_menu_button_top {
