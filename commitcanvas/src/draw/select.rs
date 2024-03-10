@@ -1,3 +1,4 @@
+use crate::state::PIXEL_STEP;
 use crate::state::STATE;
 use rough::Point;
 use wasm_bindgen::closure::Closure;
@@ -79,11 +80,22 @@ impl SelectNode {
     }
 }
 
+struct ContextMenu {
+    menu: web_sys::SvgForeignObjectElement,
+}
+
+impl Drop for ContextMenu {
+    fn drop(&mut self) {
+        self.menu.remove();
+    }
+}
+
 #[derive(Default)]
 pub struct SelectState {
     start: SelectNode,
     end: SelectNode,
     rect: Option<web_sys::Element>,
+    context_menu: Option<ContextMenu>,
 }
 
 impl Drop for SelectState {
@@ -116,6 +128,60 @@ impl SelectState {
             None
         };
 
+        let context_menu = {
+            let menu =
+                document.create_element_ns(Some("http://www.w3.org/2000/svg"), "foreignObject")?;
+            menu.set_attribute(
+                "x",
+                (std::cmp::max(start.x, end.x) + 2 * PIXEL_STEP)
+                    .to_string()
+                    .as_str(),
+            )?;
+            menu.set_attribute("y", std::cmp::min(start.y, end.y).to_string().as_str())?;
+            menu.set_attribute("width", (8 * PIXEL_STEP).to_string().as_str())?;
+            menu.set_attribute("height", (32 * PIXEL_STEP).to_string().as_str())?;
+            menu.set_attribute("class", "cc_context_menu")?;
+            let div = document.create_element("div")?;
+            div.set_attribute("class", "cc_context_menu_div")?;
+            menu.append_child(&div)?;
+            //svg.set_attribute("xmlns", "http://www.w3.org/2000/svg")?;
+            //svg.set_attribute("height", "24px")?;
+            //svg.set_attribute("viewBox", "0 0 24 24")?;
+            //svg.set_attribute("width", "24px")?;
+            //svg.set_attribute("fill", "#000000")?;
+            //let path = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
+            //path.set_attribute(
+            //    "d",
+            //    "M3 17h18v-2H3v2zm0 3h18v-1H3v1zm0-7h18v-3H3v3zm0-9v4h18V4H3z",
+            //)?;
+            //path.set_attribute("fill", "none")?;
+            //svg.append_child(&path)?;
+            //button_1.append_child(&svg)?;
+
+            let button_1 = document.create_element("button")?;
+            button_1.set_text_content(Some("Select"));
+            button_1.set_attribute("class", "cc_context_menu_button cc_context_menu_button_top")?;
+            div.append_child(&button_1)?;
+            let button_2 = document.create_element("button")?;
+            button_2.set_text_content(Some("Copy"));
+            button_2.set_attribute("class", "cc_context_menu_button")?;
+            div.append_child(&button_2)?;
+            let button_3 = document.create_element("button")?;
+            button_3.set_text_content(Some("Cut"));
+            button_3.set_attribute("class", "cc_context_menu_button")?;
+            div.append_child(&button_3)?;
+            let button_4 = document.create_element("button")?;
+            button_4.set_text_content(Some("Paste"));
+            button_4.set_attribute(
+                "class",
+                "cc_context_menu_button cc_context_menu_button_bottom",
+            )?;
+            div.append_child(&button_4)?;
+            svg.append_child(&menu)?;
+            let fo = menu.dyn_into::<web_sys::SvgForeignObjectElement>()?;
+            Some(ContextMenu { menu: fo })
+        };
+
         let start = SelectNode::new(
             document,
             svg,
@@ -131,7 +197,12 @@ impl SelectState {
             CallbackId::End,
         )?;
 
-        Ok(Self { start, end, rect })
+        Ok(Self {
+            start,
+            end,
+            rect,
+            context_menu,
+        })
     }
 
     pub fn update(&mut self, start: Point, end: Point) -> Result<(), JsValue> {
@@ -148,6 +219,16 @@ impl SelectState {
             rect.set_attribute("y", (std::cmp::min(start.y, end.y)).to_string().as_str())?;
             rect.set_attribute("width", (end.x - start.x).abs().to_string().as_str())?;
             rect.set_attribute("height", (end.y - start.y).abs().to_string().as_str())?;
+        }
+        if let Some(menu) = &mut self.context_menu {
+            menu.menu.set_attribute(
+                "x",
+                (std::cmp::max(start.x, end.x) + 2 * PIXEL_STEP)
+                    .to_string()
+                    .as_str(),
+            )?;
+            menu.menu
+                .set_attribute("y", std::cmp::min(start.y, end.y).to_string().as_str())?;
         }
         Ok(())
     }

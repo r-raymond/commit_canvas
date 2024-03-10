@@ -34,3 +34,5 @@ impl State {
 thread_local! {
     pub static STATE: RefCell<Option<State>> = RefCell::new(None);
 }
+
+pub use marker::PIXEL_STEP;

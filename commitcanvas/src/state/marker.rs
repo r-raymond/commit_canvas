@@ -3,7 +3,7 @@ use wasm_bindgen::JsValue;
 
 use crate::draw::Point;
 
-const PIXEL_STEP: i32 = 6;
+pub const PIXEL_STEP: i32 = 6;
 
 pub struct Marker {
     document: web_sys::Document,
