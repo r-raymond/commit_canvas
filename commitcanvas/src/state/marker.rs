@@ -1,4 +1,3 @@
-use crate::log;
 use rough::geometry::Vector;
 use wasm_bindgen::JsValue;
 
@@ -30,11 +29,8 @@ impl Marker {
     }
 
     pub fn set_mouse_coords(&mut self, coords: Point) -> Result<(), JsValue> {
-        log(self.offset.x as usize);
-        log(coords.x as usize);
         self.mouse_coords = Some(coords);
         let coords = coords + &self.offset;
-        log(coords.x as usize);
         self.nearest_marker_coords = Some(Point::new(
             ((coords.x - PIXEL_STEP) as f32 / 12.0).round() as i32 * PIXEL_STEP * 2 + PIXEL_STEP,
             ((coords.y - PIXEL_STEP) as f32 / 12.0).round() as i32 * PIXEL_STEP * 2 + PIXEL_STEP,

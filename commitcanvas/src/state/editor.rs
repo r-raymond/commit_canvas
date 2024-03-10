@@ -61,26 +61,32 @@ impl Editor {
         self.mode = mode;
         match self.mode {
             EditorMode::Normal => {
+                self.svg.set_attribute("cursor", "normal")?;
                 self.marker.set_marker(false)?;
                 self.set_active_nav_button(Some("selectCanvas"))?;
             }
             EditorMode::Arrow => {
+                self.svg.set_attribute("cursor", "normal")?;
                 self.marker.set_marker(true)?;
                 self.set_active_nav_button(Some("arrowCanvas"))?;
             }
             EditorMode::Rect => {
+                self.svg.set_attribute("cursor", "normal")?;
                 self.marker.set_marker(true)?;
                 self.set_active_nav_button(Some("rectCanvas"))?;
             }
             EditorMode::Selected { item: _ } => {
+                self.svg.set_attribute("cursor", "normal")?;
                 self.marker.set_marker(false)?;
                 self.set_active_nav_button(None)?;
             }
             EditorMode::Panning { .. } => {
+                self.svg.set_attribute("cursor", "grabbing")?;
                 self.marker.set_marker(false)?;
                 self.set_active_nav_button(None)?;
             }
             EditorMode::Text { text: _ } => {
+                self.svg.set_attribute("cursor", "normal")?;
                 self.marker.set_marker(true)?;
                 self.set_active_nav_button(Some("textCanvas"))?;
             }
@@ -163,7 +169,7 @@ impl Editor {
         match &mut self.mode {
             EditorMode::Normal => {}
             EditorMode::Panning { start } => {
-                self.offset = coords - start;
+                self.offset = *start - &coords;
                 let bb = self.svg.get_bounding_client_rect();
                 self.svg.set_attribute(
                     "viewBox",
@@ -307,15 +313,6 @@ impl Editor {
     }
 
     pub fn touchstart(&mut self, _event: &web_sys::TouchEvent) -> Result<(), JsValue> {
-        Ok(())
-    }
-
-    pub fn resize(&mut self) -> Result<(), JsValue> {
-        let bb = self.svg.get_bounding_client_rect();
-        self.svg.set_attribute(
-            "viewBox",
-            &format!("{} {} {} {}", bb.x(), bb.y(), bb.width(), bb.height()),
-        )?;
         Ok(())
     }
 
