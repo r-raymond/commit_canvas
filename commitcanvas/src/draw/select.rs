@@ -147,8 +147,6 @@ impl SelectState {
             let thickness_svg =
                 document.create_element_ns(Some("http://www.w3.org/2000/svg"), "svg")?;
             thickness_svg.set_attribute("xmlns", "http://www.w3.org/2000/svg")?;
-            thickness_svg.set_attribute("height", "24px")?;
-            thickness_svg.set_attribute("width", "24px")?;
             thickness_svg.set_attribute("viewBox", "0 0 24 24")?;
             thickness_svg.set_attribute("class", "cc_icon")?;
             let tickness_title = document.create_element("title")?;
@@ -173,8 +171,6 @@ impl SelectState {
             let straightness_svg =
                 document.create_element_ns(Some("http://www.w3.org/2000/svg"), "svg")?;
             straightness_svg.set_attribute("xmlns", "http://www.w3.org/2000/svg")?;
-            straightness_svg.set_attribute("height", "24px")?;
-            straightness_svg.set_attribute("width", "24px")?;
             straightness_svg.set_attribute("viewBox", "0 0 24 24")?;
             straightness_svg.set_attribute("class", "cc_icon")?;
             let straightness_title = document.create_element("title")?;
