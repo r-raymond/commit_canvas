@@ -108,6 +108,7 @@ impl SelectState {
             rect.set_attribute("y", (std::cmp::min(start.y, end.y)).to_string().as_str())?;
             rect.set_attribute("width", (end.x - start.x).abs().to_string().as_str())?;
             rect.set_attribute("height", (end.y - start.y).abs().to_string().as_str())?;
+            rect.set_attribute("rx", "5")?;
             rect.set_attribute("class", "cc_arrow_select_rect")?;
             svg.append_child(&rect)?;
             Some(rect)
