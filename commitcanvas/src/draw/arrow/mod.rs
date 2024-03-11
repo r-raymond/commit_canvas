@@ -80,7 +80,7 @@ impl Shape for Arrow {
             start,
             path,
             thickness: 2.0,
-            roughness: 5.0,
+            roughness: 0.4,
             end: start,
             callback: closure,
         })
@@ -157,12 +157,12 @@ impl Shape for Arrow {
                         .set_attribute("stroke-width", self.thickness.to_string().as_str())?;
                 }
                 CallbackId::Straightness => {
-                    if self.roughness == 5.0 {
-                        self.roughness = 10.0;
-                    } else if self.roughness == 10.0 {
+                    if self.roughness == 0.4 {
+                        self.roughness = 0.8;
+                    } else if self.roughness == 0.8 {
                         self.roughness = 0.0;
                     } else {
-                        self.roughness = 5.0;
+                        self.roughness = 0.4;
                     }
                     self.path.set_attribute("d", self.render().as_str())?;
                 }
