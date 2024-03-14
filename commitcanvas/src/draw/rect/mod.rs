@@ -6,6 +6,7 @@ use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 
+use super::select::{LineThickness, Roughness};
 use super::Shape;
 
 enum RectState {
@@ -29,6 +30,8 @@ pub struct Rect {
     pub guid: i32,
     start: Point,
     end: Point,
+    thickness: LineThickness,
+    roughness: Roughness,
     #[allow(dead_code)]
     callback: Option<Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>>,
 }
@@ -68,6 +71,8 @@ impl Shape for Rect {
             end: start,
             path,
             guid,
+            thickness: LineThickness::default(),
+            roughness: Roughness::default(),
             callback: Some(closure),
         })
     }
@@ -130,8 +135,17 @@ impl Shape for Rect {
                     };
                     self.path.set_attribute("class", "cc_rect_provisional")?;
                 }
-                CallbackId::Thickness => {}
-                CallbackId::Roughness => {}
+                CallbackId::Thickness => {
+                    self.thickness.increment();
+                    self.path.set_attribute(
+                        "stroke-width",
+                        f32::from(&self.thickness).to_string().as_str(),
+                    )?;
+                }
+                CallbackId::Roughness => {
+                    self.roughness.increment();
+                    self.path.set_attribute("d", self.render().as_str())?;
+                }
             },
             _ => {}
         }
@@ -190,10 +204,14 @@ impl Rect {
     fn render(&self) -> String {
         format!(
             "{} {} {} {}",
-            RoughLine::new(self.start, Point::new(self.end.x, self.start.y)).to_svg_path(10.0, 2),
-            RoughLine::new(Point::new(self.end.x, self.start.y), self.end).to_svg_path(10.0, 2),
-            RoughLine::new(self.end, Point::new(self.start.x, self.end.y)).to_svg_path(10.0, 2),
-            RoughLine::new(Point::new(self.start.x, self.end.y), self.start).to_svg_path(10.0, 2),
+            RoughLine::new(self.start, Point::new(self.end.x, self.start.y))
+                .to_svg_path((&self.roughness).into(), 2),
+            RoughLine::new(Point::new(self.end.x, self.start.y), self.end)
+                .to_svg_path((&self.roughness).into(), 2),
+            RoughLine::new(self.end, Point::new(self.start.x, self.end.y))
+                .to_svg_path((&self.roughness).into(), 2),
+            RoughLine::new(Point::new(self.start.x, self.end.y), self.start)
+                .to_svg_path((&self.roughness).into(), 2,),
         )
     }
 }

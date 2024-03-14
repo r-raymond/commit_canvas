@@ -39,7 +39,7 @@
 }
 
 .cc_rect_provisional {
-    @apply stroke-stone-400 stroke-2 fill-transparent;
+    @apply stroke-stone-400 fill-transparent;
 }
 
 .cc_arrow_select_node {
@@ -51,7 +51,7 @@
 }
 
 .cc_rect {
-    @apply stroke-stone-800 stroke-2 fill-transparent cursor-pointer;
+    @apply stroke-stone-800 fill-transparent cursor-pointer;
 }
 
 .cc_nav_button {

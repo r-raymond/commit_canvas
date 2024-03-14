@@ -61,7 +61,10 @@ impl Shape for Arrow {
         let path = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
         path.set_attribute("class", "cc_arrow")?;
         path.set_attribute("marker-end", "url(#cc_arrow_head)")?;
-        path.set_attribute("stroke-width", 2.0.to_string().as_str())?;
+        path.set_attribute(
+            "stroke-width",
+            f32::from(&LineThickness::default()).to_string().as_str(),
+        )?;
         svg.append_child(&path)?;
         let closure = Closure::wrap(Box::new(move |_event: web_sys::MouseEvent| {
             STATE.with(|s| -> Result<_, JsValue> {
