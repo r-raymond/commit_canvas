@@ -131,7 +131,7 @@ impl Shape for Rect {
                     self.path.set_attribute("class", "cc_rect_provisional")?;
                 }
                 CallbackId::Thickness => {}
-                CallbackId::Straightness => {}
+                CallbackId::Roughness => {}
             },
             _ => {}
         }

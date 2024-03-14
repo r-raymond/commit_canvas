@@ -7,6 +7,8 @@ use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 
+use super::select::{LineThickness, Roughness};
+
 enum ArrowState {
     Normal,
     Removed,
@@ -34,15 +36,15 @@ pub struct Arrow {
     pub guid: i32,
     start: Point,
     end: Point,
-    thickness: f32,
-    roughness: f32,
+    thickness: LineThickness,
+    roughness: Roughness,
     #[allow(dead_code)]
     callback: Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>,
 }
 
 impl Arrow {
     fn render(&self) -> String {
-        RoughLine::new(self.start, self.end).to_svg_path(self.roughness, 2)
+        RoughLine::new(self.start, self.end).to_svg_path((&self.roughness).into(), 2)
     }
 }
 
@@ -79,8 +81,8 @@ impl Shape for Arrow {
             guid,
             start,
             path,
-            thickness: 2.0,
-            roughness: 0.4,
+            thickness: LineThickness::default(),
+            roughness: Roughness::default(),
             end: start,
             callback: closure,
         })
@@ -146,24 +148,14 @@ impl Shape for Arrow {
                         .set_attribute("marker-end", "url(#cc_arrow_head_provisional)")?;
                 }
                 CallbackId::Thickness => {
-                    if self.thickness == 1.4 {
-                        self.thickness = 2.0;
-                    } else if self.thickness == 2.0 {
-                        self.thickness = 3.0;
-                    } else {
-                        self.thickness = 1.4;
-                    }
-                    self.path
-                        .set_attribute("stroke-width", self.thickness.to_string().as_str())?;
+                    self.thickness.increment();
+                    self.path.set_attribute(
+                        "stroke-width",
+                        f32::from(&self.thickness).to_string().as_str(),
+                    )?;
                 }
-                CallbackId::Straightness => {
-                    if self.roughness == 0.4 {
-                        self.roughness = 0.8;
-                    } else if self.roughness == 0.8 {
-                        self.roughness = 0.0;
-                    } else {
-                        self.roughness = 0.4;
-                    }
+                CallbackId::Roughness => {
+                    self.roughness.increment();
                     self.path.set_attribute("d", self.render().as_str())?;
                 }
             },

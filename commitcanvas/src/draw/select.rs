@@ -10,7 +10,71 @@ pub enum CallbackId {
     Start = 0,
     End = 1,
     Thickness = 2,
-    Straightness = 3,
+    Roughness = 3,
+}
+
+pub enum LineThickness {
+    Thin,
+    Medium,
+    Thick,
+}
+
+impl LineThickness {
+    pub fn increment(&mut self) {
+        *self = match *self {
+            LineThickness::Thin => LineThickness::Medium,
+            LineThickness::Medium => LineThickness::Thick,
+            LineThickness::Thick => LineThickness::Thin,
+        };
+    }
+}
+
+impl From<&LineThickness> for f32 {
+    fn from(value: &LineThickness) -> f32 {
+        match value {
+            LineThickness::Thin => 1.4,
+            LineThickness::Medium => 2.0,
+            LineThickness::Thick => 3.0,
+        }
+    }
+}
+
+impl Default for LineThickness {
+    fn default() -> Self {
+        Self::Thin
+    }
+}
+
+pub enum Roughness {
+    Low,
+    Medium,
+    High,
+}
+
+impl Roughness {
+    pub fn increment(&mut self) {
+        *self = match *self {
+            Roughness::Low => Roughness::Medium,
+            Roughness::Medium => Roughness::High,
+            Roughness::High => Roughness::Low,
+        };
+    }
+}
+
+impl From<&Roughness> for f32 {
+    fn from(value: &Roughness) -> f32 {
+        match value {
+            Roughness::Low => 0.0,
+            Roughness::Medium => 0.5,
+            Roughness::High => 0.8,
+        }
+    }
+}
+
+impl Default for Roughness {
+    fn default() -> Self {
+        Self::Medium
+    }
 }
 
 impl TryFrom<i32> for CallbackId {
@@ -194,7 +258,7 @@ impl SelectState {
             straightness_svg.set_attribute("viewBox", "0 0 24 24")?;
             straightness_svg.set_attribute("class", "cc_icon")?;
             let straightness_title = document.create_element("title")?;
-            straightness_title.set_text_content(Some("Straightness"));
+            straightness_title.set_text_content(Some("Roughness"));
             straightness_svg.append_child(&straightness_title)?;
             let path1 = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
             let path2 = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
@@ -210,7 +274,7 @@ impl SelectState {
                 STATE.with(|s| -> Result<_, JsValue> {
                     let mut state_ref = s.borrow_mut();
                     let state = state_ref.as_mut().ok_or("state is None")?;
-                    state.editor.modify(CallbackId::Straightness)?;
+                    state.editor.modify(CallbackId::Roughness)?;
                     event.prevent_default();
                     Ok(())
                 })?;
