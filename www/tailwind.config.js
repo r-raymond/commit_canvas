@@ -3,7 +3,7 @@ module.exports = {
   content: ["*.html"],
   theme: {
     fontFamily: {
-      sans: ["Itim"],
+      sans: ["Rock Salt"],
     },
     extend: {
       colors: {

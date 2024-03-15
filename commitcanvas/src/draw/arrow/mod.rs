@@ -220,4 +220,8 @@ impl Shape for Arrow {
     fn is_unselected(&self) -> bool {
         matches!(self.state, ArrowState::Normal)
     }
+
+    fn double_click(&mut self) -> Result<(), JsValue> {
+        Ok(())
+    }
 }

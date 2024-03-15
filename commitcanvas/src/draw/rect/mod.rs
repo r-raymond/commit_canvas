@@ -198,6 +198,10 @@ impl Shape for Rect {
         }
         Ok(())
     }
+
+    fn double_click(&mut self) -> Result<(), JsValue> {
+        Ok(())
+    }
 }
 
 impl Rect {

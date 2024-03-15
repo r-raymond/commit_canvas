@@ -27,4 +27,6 @@ pub trait Shape {
     fn is_removed(&self) -> bool;
 
     fn is_unselected(&self) -> bool;
+
+    fn double_click(&mut self) -> Result<(), JsValue>;
 }
