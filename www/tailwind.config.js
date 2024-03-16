@@ -9,6 +9,9 @@ module.exports = {
       colors: {
         primary: "#FCA5A5",
       },
+      lineHeight: {
+        0: "0",
+      },
     },
   },
   plugins: [],

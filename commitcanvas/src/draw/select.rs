@@ -216,24 +216,9 @@ impl SelectState {
             let div = document.create_element("div")?;
             div.set_attribute("class", "cc_context_menu_div")?;
             menu.append_child(&div)?;
-            let thickness_svg =
-                document.create_element_ns(Some("http://www.w3.org/2000/svg"), "svg")?;
-            thickness_svg.set_attribute("xmlns", "http://www.w3.org/2000/svg")?;
-            thickness_svg.set_attribute("viewBox", "0 0 24 24")?;
-            thickness_svg.set_attribute("class", "cc_icon")?;
-            let tickness_title = document.create_element("title")?;
-            tickness_title.set_text_content(Some("Thickness"));
-            thickness_svg.append_child(&tickness_title)?;
-            let path1 = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
-            let path2 = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
-            path1.set_attribute(
-                "d",
-                "M3 17h18v-2H3v2zm0 3h18v-1H3v1zm0-7h18v-3H3v3zm0-9v4h18V4H3z",
-            )?;
-            path2.set_attribute("d", "M0 0h24v24H0z")?;
-            path2.set_attribute("fill", "none")?;
-            thickness_svg.append_child(&path1)?;
-            thickness_svg.append_child(&path2)?;
+            let thickness_icon = document.create_element("span")?;
+            thickness_icon.set_attribute("class", "material-symbols-rounded cc_icon")?;
+            thickness_icon.set_text_content(Some("line_weight"));
             let callback_thickness = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
                 STATE.with(|s| -> Result<_, JsValue> {
                     let mut state_ref = s.borrow_mut();
@@ -247,7 +232,7 @@ impl SelectState {
                 as Box<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>);
 
             let button_1 = document.create_element("button")?;
-            button_1.append_child(&thickness_svg)?;
+            button_1.append_child(&thickness_icon)?;
             button_1.set_attribute("class", "cc_context_menu_button cc_context_menu_button_top")?;
             button_1.add_event_listener_with_callback(
                 "click",
@@ -255,24 +240,10 @@ impl SelectState {
             )?;
             div.append_child(&button_1)?;
 
-            let straightness_svg =
-                document.create_element_ns(Some("http://www.w3.org/2000/svg"), "svg")?;
-            straightness_svg.set_attribute("xmlns", "http://www.w3.org/2000/svg")?;
-            straightness_svg.set_attribute("viewBox", "0 0 24 24")?;
-            straightness_svg.set_attribute("class", "cc_icon")?;
-            let straightness_title = document.create_element("title")?;
-            straightness_title.set_text_content(Some("Roughness"));
-            straightness_svg.append_child(&straightness_title)?;
-            let path1 = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
-            let path2 = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
-            path1.set_attribute(
-                "d",
-                "M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 10H3V8h2v4h2V8h2v4h2V8h2v4h2V8h2v4h2V8h2v8z"
-            )?;
-            path2.set_attribute("d", "M0 0h24v24H0z")?;
-            path2.set_attribute("fill", "none")?;
-            straightness_svg.append_child(&path1)?;
-            straightness_svg.append_child(&path2)?;
+            let roughness_icon = document.create_element("span")?;
+            roughness_icon.set_attribute("class", "material-symbols-rounded cc_icon")?;
+            roughness_icon.set_text_content(Some("straighten"));
+
             let callback_straightness = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
                 STATE.with(|s| -> Result<_, JsValue> {
                     let mut state_ref = s.borrow_mut();
@@ -286,7 +257,7 @@ impl SelectState {
                 as Box<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>);
 
             let button_2 = document.create_element("button")?;
-            button_2.append_child(&straightness_svg)?;
+            button_2.append_child(&roughness_icon)?;
             button_2.set_attribute(
                 "class",
                 "cc_context_menu_button cc_context_menu_button_bottom",

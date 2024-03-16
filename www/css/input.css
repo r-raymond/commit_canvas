@@ -4,7 +4,7 @@
 
 
 .cc_icon {
-    @apply fill-stone-700 h-5 w-5;
+    @apply fill-stone-700 text-stone-700;
 }
 
 #cc_nearest_marker {
@@ -55,7 +55,7 @@
 }
 
 .cc_nav_button {
-    @apply px-2 py-2 bg-stone-100 hover:bg-stone-200 focus:outline-none text-stone-800 border-stone-400 border-t border-b border-r;
+    @apply px-2 py-2 bg-stone-100 hover:bg-stone-200 focus:outline-none text-stone-800 border-stone-400 border-t border-b border-r leading-0;
 }
 
 .cc_nav_left {
@@ -71,7 +71,7 @@
 }
 
 .cc_context_menu_button {
-    @apply px-2 py-2 bg-stone-100 hover:bg-stone-200 focus:outline-none text-stone-800 border-stone-400 border-l border-b border-r;
+    @apply px-2 py-2 bg-stone-100 hover:bg-stone-200 focus:outline-none text-stone-800 border-stone-400 border-l border-b border-r leading-0;
 }
 
 .cc_context_menu_button_top {
