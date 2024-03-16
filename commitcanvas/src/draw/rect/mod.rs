@@ -2,6 +2,7 @@ use crate::draw::select::{CallbackId, SelectState};
 use crate::state::STATE;
 use rough::Line as RoughLine;
 use rough::Point;
+use serde::{ser::SerializeStruct, Serialize};
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -39,6 +40,21 @@ pub struct Rect {
 impl Drop for Rect {
     fn drop(&mut self) {
         self.path.remove();
+    }
+}
+
+impl Serialize for Rect {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut ss = serializer.serialize_struct("Rect", 5)?;
+        ss.serialize_field("guid", &self.guid)?;
+        ss.serialize_field("start", &self.start)?;
+        ss.serialize_field("end", &self.end)?;
+        ss.serialize_field("thickness", &self.thickness)?;
+        ss.serialize_field("roughness", &self.roughness)?;
+        ss.end()
     }
 }
 

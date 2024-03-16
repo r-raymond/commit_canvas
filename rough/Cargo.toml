@@ -1,8 +1,11 @@
 [package]
 name = "rough"
+edition = "2021"
 version.workspace = true
 authors.workspace = true
 description.workspace = true
 
 [dependencies]
 rand = { version = "0.8", features = ["small_rng"], default-features = false }
+serde.workspace = true
+serde_yaml.workspace = true

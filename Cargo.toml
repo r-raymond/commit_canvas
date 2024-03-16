@@ -12,3 +12,4 @@ description = "A tool to create commit graphs from git repositories"
 
 [workspace.dependencies]
 serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"

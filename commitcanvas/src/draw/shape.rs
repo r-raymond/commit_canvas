@@ -1,8 +1,9 @@
 use crate::draw::select::CallbackId;
+use erased_serde::Serialize;
 use rough::Point;
 use wasm_bindgen::JsValue;
 
-pub trait Shape {
+pub trait Shape: Serialize {
     fn new(
         document: &web_sys::Document,
         svg: &web_sys::SvgElement,
@@ -28,5 +29,6 @@ pub trait Shape {
 
     fn is_unselected(&self) -> bool;
 
+    #[allow(dead_code)]
     fn double_click(&mut self) -> Result<(), JsValue>;
 }

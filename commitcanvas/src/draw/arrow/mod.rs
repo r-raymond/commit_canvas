@@ -3,6 +3,7 @@ use crate::draw::shape::Shape;
 use crate::state::STATE;
 use rough::Line as RoughLine;
 use rough::Point;
+use serde::{ser::SerializeStruct, Serialize};
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -40,6 +41,21 @@ pub struct Arrow {
     roughness: Roughness,
     #[allow(dead_code)]
     callback: Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>,
+}
+
+impl Serialize for Arrow {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut ss = serializer.serialize_struct("Arrow", 5)?;
+        ss.serialize_field("guid", &self.guid)?;
+        ss.serialize_field("start", &self.start)?;
+        ss.serialize_field("end", &self.end)?;
+        ss.serialize_field("thickness", &self.thickness)?;
+        ss.serialize_field("roughness", &self.roughness)?;
+        ss.end()
+    }
 }
 
 impl Arrow {

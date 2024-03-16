@@ -1,6 +1,7 @@
 use rand::rngs::SmallRng;
 use rand::Rng;
 use rand::SeedableRng;
+use serde::{ser::SerializeTuple, Serialize};
 use std::ops::Add;
 use std::ops::Mul;
 use std::ops::Sub;
@@ -14,6 +15,18 @@ pub struct Point {
 impl Point {
     pub fn new(x: i32, y: i32) -> Point {
         Point { x, y }
+    }
+}
+
+impl Serialize for Point {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut ts = serializer.serialize_tuple(2)?;
+        ts.serialize_element(&self.x)?;
+        ts.serialize_element(&self.y)?;
+        ts.end()
     }
 }
 

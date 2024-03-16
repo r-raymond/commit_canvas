@@ -1,6 +1,7 @@
 use crate::state::PIXEL_STEP;
 use crate::state::STATE;
 use rough::Point;
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -13,6 +14,7 @@ pub enum CallbackId {
     Roughness = 3,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum LineThickness {
     Thin,
     Medium,
@@ -45,6 +47,7 @@ impl Default for LineThickness {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum Roughness {
     Low,
     Medium,
