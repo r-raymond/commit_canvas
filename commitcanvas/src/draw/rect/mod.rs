@@ -208,14 +208,26 @@ impl Rect {
     fn render(&self) -> String {
         format!(
             "{} {} {} {}",
-            RoughLine::new(self.start, Point::new(self.end.x, self.start.y))
-                .to_svg_path((&self.roughness).into(), 2),
-            RoughLine::new(Point::new(self.end.x, self.start.y), self.end)
-                .to_svg_path((&self.roughness).into(), 2),
-            RoughLine::new(self.end, Point::new(self.start.x, self.end.y))
-                .to_svg_path((&self.roughness).into(), 2),
-            RoughLine::new(Point::new(self.start.x, self.end.y), self.start)
-                .to_svg_path((&self.roughness).into(), 2,),
+            RoughLine::new(self.start, Point::new(self.end.x, self.start.y)).to_svg_path(
+                (&self.roughness).into(),
+                2,
+                1.0
+            ),
+            RoughLine::new(Point::new(self.end.x, self.start.y), self.end).to_svg_path(
+                (&self.roughness).into(),
+                2,
+                1.0
+            ),
+            RoughLine::new(self.end, Point::new(self.start.x, self.end.y)).to_svg_path(
+                (&self.roughness).into(),
+                2,
+                1.0
+            ),
+            RoughLine::new(Point::new(self.start.x, self.end.y), self.start).to_svg_path(
+                (&self.roughness).into(),
+                2,
+                1.0
+            ),
         )
     }
 }

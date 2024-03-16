@@ -102,14 +102,14 @@ impl Line {
         (x * x + y * y).sqrt()
     }
 
-    pub fn to_catmull_rom_spline(&self, roughness: f32, count: i32) -> [Point; 4] {
+    pub fn to_catmull_rom_spline(&self, roughness: f32, count: i32, end_damp: f32) -> [Point; 4] {
         let length = self.length();
         let mut rng = SmallRng::seed_from_u64(
             (self.start.x + self.start.y + self.end.x + self.end.y + count) as u64,
         );
         let roughness = f32::clamp(0.1 * roughness * length, 0.1, 100.0);
-        let r1 = f32::sqrt(rng.gen_range(0.0..roughness));
-        let r2 = f32::sqrt(rng.gen_range(0.0..roughness));
+        let r1 = f32::sqrt(rng.gen_range(0.0..roughness)) / end_damp;
+        let r2 = f32::sqrt(rng.gen_range(0.0..roughness)) / end_damp;
         let phi1 = rng.gen_range(0.0..std::f32::consts::PI * 2.0);
         let phi2 = rng.gen_range(0.0..std::f32::consts::PI * 2.0);
         let mid_point_offset = 0.005 * length * rng.gen::<f32>();
@@ -135,10 +135,10 @@ impl Line {
         return [start, mid_point, control_point, end];
     }
 
-    pub fn to_svg_path(&self, roughness: f32, count: i32) -> String {
+    pub fn to_svg_path(&self, roughness: f32, count: i32, end_damp: f32) -> String {
         let mut path = String::new();
         for i in 0..count {
-            let spline = self.to_catmull_rom_spline(roughness, i);
+            let spline = self.to_catmull_rom_spline(roughness, i, end_damp);
             path += &format!(
                 " M {} {} C {} {} {} {} {} {}",
                 spline[0].x,

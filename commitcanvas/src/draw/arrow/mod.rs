@@ -44,7 +44,7 @@ pub struct Arrow {
 
 impl Arrow {
     fn render(&self) -> String {
-        RoughLine::new(self.start, self.end).to_svg_path((&self.roughness).into(), 2)
+        RoughLine::new(self.start, self.end).to_svg_path((&self.roughness).into(), 2, 5.0)
     }
 }
 
