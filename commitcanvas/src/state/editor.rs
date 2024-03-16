@@ -326,4 +326,13 @@ impl Editor {
     pub fn touchend(&mut self, _event: &web_sys::TouchEvent) -> Result<(), JsValue> {
         Ok(())
     }
+
+    pub fn delete(&mut self) -> Result<(), JsValue> {
+        if let EditorMode::Selected { item } = self.mode {
+            if let Some(shape) = self.shapes.get_mut(&item) {
+                shape.remove()?;
+            }
+        }
+        Ok(())
+    }
 }

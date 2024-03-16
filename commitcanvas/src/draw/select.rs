@@ -153,7 +153,9 @@ struct ContextMenu {
     #[allow(dead_code)]
     callback_thickness: Option<Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>>,
     #[allow(dead_code)]
-    callback_straightness: Option<Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>>,
+    callback_roughness: Option<Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>>,
+    #[allow(dead_code)]
+    callback_delete: Option<Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>>,
 }
 
 impl Drop for ContextMenu {
@@ -244,7 +246,7 @@ impl SelectState {
             roughness_icon.set_attribute("class", "material-symbols-rounded cc_icon")?;
             roughness_icon.set_text_content(Some("straighten"));
 
-            let callback_straightness = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+            let callback_roughness = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
                 STATE.with(|s| -> Result<_, JsValue> {
                     let mut state_ref = s.borrow_mut();
                     let state = state_ref.as_mut().ok_or("state is None")?;
@@ -258,21 +260,48 @@ impl SelectState {
 
             let button_2 = document.create_element("button")?;
             button_2.append_child(&roughness_icon)?;
-            button_2.set_attribute(
+            button_2.set_attribute("class", "cc_context_menu_button")?;
+            button_2.add_event_listener_with_callback(
+                "click",
+                callback_roughness.as_ref().unchecked_ref(),
+            )?;
+            div.append_child(&button_2)?;
+
+            let delete_icon = document.create_element("span")?;
+            delete_icon.set_attribute("class", "material-symbols-rounded cc_icon")?;
+            delete_icon.set_text_content(Some("delete"));
+
+            let callback_delete = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+                STATE.with(|s| -> Result<_, JsValue> {
+                    let mut state_ref = s.borrow_mut();
+                    let state = state_ref.as_mut().ok_or("state is None")?;
+                    state.editor.delete()?;
+                    event.prevent_default();
+                    Ok(())
+                })?;
+                Ok(())
+            })
+                as Box<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>);
+
+            let button_3 = document.create_element("button")?;
+            button_3.append_child(&delete_icon)?;
+            button_3.set_attribute(
                 "class",
                 "cc_context_menu_button cc_context_menu_button_bottom",
             )?;
-            button_2.add_event_listener_with_callback(
-                "click",
-                callback_straightness.as_ref().unchecked_ref(),
+            button_3.add_event_listener_with_callback(
+                "mousedown",
+                callback_delete.as_ref().unchecked_ref(),
             )?;
-            div.append_child(&button_2)?;
+            div.append_child(&button_3)?;
+
             svg.append_child(&menu)?;
             let fo = menu.dyn_into::<web_sys::SvgForeignObjectElement>()?;
             Some(ContextMenu {
                 menu: fo,
                 callback_thickness: Some(callback_thickness),
-                callback_straightness: Some(callback_straightness),
+                callback_roughness: Some(callback_roughness),
+                callback_delete: Some(callback_delete),
             })
         };
 

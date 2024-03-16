@@ -240,4 +240,9 @@ impl Shape for Arrow {
     fn double_click(&mut self) -> Result<(), JsValue> {
         Ok(())
     }
+
+    fn remove(&mut self) -> Result<(), JsValue> {
+        self.state = ArrowState::Removed;
+        Ok(())
+    }
 }

@@ -25,6 +25,8 @@ pub trait Shape: Serialize {
 
     fn update(&mut self, point: Point) -> Result<(), JsValue>;
 
+    fn remove(&mut self) -> Result<(), JsValue>;
+
     fn is_removed(&self) -> bool;
 
     fn is_unselected(&self) -> bool;

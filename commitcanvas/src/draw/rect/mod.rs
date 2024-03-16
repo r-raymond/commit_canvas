@@ -218,6 +218,11 @@ impl Shape for Rect {
     fn double_click(&mut self) -> Result<(), JsValue> {
         Ok(())
     }
+
+    fn remove(&mut self) -> Result<(), JsValue> {
+        self.state = RectState::Removed;
+        Ok(())
+    }
 }
 
 impl Rect {
