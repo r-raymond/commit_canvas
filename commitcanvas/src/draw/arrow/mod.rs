@@ -60,7 +60,7 @@ impl Serialize for Arrow {
 
 impl Arrow {
     fn render(&self) -> String {
-        RoughLine::new(self.start, self.end).to_svg_path((&self.roughness).into(), 2, 5.0)
+        RoughLine::new(self.start, self.end).to_svg_path((&self.roughness).into(), 2, 2.0)
     }
 }
 

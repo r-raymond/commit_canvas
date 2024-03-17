@@ -16,11 +16,11 @@
 }
 
 #cc_arrow_head {
-    @apply fill-stone-800;
+    @apply fill-none stroke-stone-800;
 }
 
 #cc_arrow_head_provisional {
-    @apply fill-stone-400;
+    @apply fill-none stroke-stone-400;
 }
 
 .cc_app {
