@@ -241,10 +241,14 @@ impl Shape for Rect {
                 }
                 select.update(self.start, self.end)?;
                 self.path.set_attribute("d", self.render().as_str())?;
-                self.rect
-                    .set_attribute("x", self.start.x.to_string().as_str())?;
-                self.rect
-                    .set_attribute("y", self.start.y.to_string().as_str())?;
+                self.rect.set_attribute(
+                    "x",
+                    std::cmp::min(self.start.x, self.end.x).to_string().as_str(),
+                )?;
+                self.rect.set_attribute(
+                    "y",
+                    std::cmp::min(self.start.y, self.end.y).to_string().as_str(),
+                )?;
                 self.rect.set_attribute(
                     "width",
                     (self.end.x - self.start.x).abs().to_string().as_str(),
