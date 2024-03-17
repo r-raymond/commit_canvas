@@ -71,7 +71,7 @@ impl Shape for Rect {
         path.set_attribute("class", "cc_rect_provisional")?;
         svg.append_child(&path)?;
         let rect = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "rect")?;
-        rect.set_attribute("class", "cc_fill_none stroke-none cc_rect")?;
+        rect.set_attribute("class", "cc_rect_fill")?;
         svg.append_child(&rect)?;
         let closure = Closure::wrap(Box::new(move |_event: web_sys::MouseEvent| {
             STATE.with(|s| -> Result<_, JsValue> {
@@ -160,6 +160,22 @@ impl Shape for Rect {
                     };
                     self.path.set_attribute("class", "cc_rect_provisional")?;
                 }
+                CallbackId::StartEnd => {
+                    self.state = RectState::Moving {
+                        select_id: identifier,
+                        select: std::mem::take(select),
+                        fallback: Point::new(self.start.x, self.end.y),
+                    };
+                    self.path.set_attribute("class", "cc_rect_provisional")?;
+                }
+                CallbackId::EndStart => {
+                    self.state = RectState::Moving {
+                        select_id: identifier,
+                        select: std::mem::take(select),
+                        fallback: Point::new(self.end.x, self.start.y),
+                    };
+                    self.path.set_attribute("class", "cc_rect_provisional")?;
+                }
                 CallbackId::Thickness => {
                     self.thickness.increment();
                     self.path.set_attribute(
@@ -237,6 +253,14 @@ impl Shape for Rect {
                     }
                     CallbackId::End => {
                         self.end = point;
+                    }
+                    CallbackId::StartEnd => {
+                        self.start.x = point.x;
+                        self.end.y = point.y;
+                    }
+                    CallbackId::EndStart => {
+                        self.end.x = point.x;
+                        self.start.y = point.y;
                     }
                     _ => {}
                 }

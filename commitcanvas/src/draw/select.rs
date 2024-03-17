@@ -8,11 +8,13 @@ use wasm_bindgen::JsValue;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CallbackId {
-    Start = 0,
-    End = 1,
-    Thickness = 2,
-    Roughness = 3,
-    Fill = 4,
+    Start,
+    End,
+    StartEnd,
+    EndStart,
+    Thickness,
+    Roughness,
+    Fill,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -244,6 +246,8 @@ impl Drop for ContextMenu {
 pub struct SelectState {
     start: SelectNode,
     end: SelectNode,
+    se_offset: SelectNode,
+    es_offset: SelectNode,
     rect: Option<web_sys::Element>,
     context_menu: Option<ContextMenu>,
 }
@@ -414,24 +418,41 @@ impl SelectState {
             })
         };
 
-        let start = SelectNode::new(
+        let start_node = SelectNode::new(
             document,
             svg,
             start.x.to_string().as_str(),
             start.y.to_string().as_str(),
             CallbackId::Start,
         )?;
-        let end = SelectNode::new(
+        let end_node = SelectNode::new(
             document,
             svg,
             end.x.to_string().as_str(),
             end.y.to_string().as_str(),
             CallbackId::End,
         )?;
+        let se_offset = SelectNode::new(
+            document,
+            svg,
+            start.x.to_string().as_str(),
+            end.y.to_string().as_str(),
+            CallbackId::StartEnd,
+        )?;
+
+        let es_offset = SelectNode::new(
+            document,
+            svg,
+            end.x.to_string().as_str(),
+            start.y.to_string().as_str(),
+            CallbackId::EndStart,
+        )?;
 
         Ok(Self {
-            start,
-            end,
+            start: start_node,
+            end: end_node,
+            se_offset,
+            es_offset,
             rect,
             context_menu,
         })
@@ -445,6 +466,14 @@ impl SelectState {
         if let Some(node) = &mut self.end.node {
             node.set_attribute("cx", end.x.to_string().as_str())?;
             node.set_attribute("cy", end.y.to_string().as_str())?;
+        }
+        if let Some(node) = &mut self.se_offset.node {
+            node.set_attribute("cx", start.x.to_string().as_str())?;
+            node.set_attribute("cy", end.y.to_string().as_str())?;
+        }
+        if let Some(node) = &mut self.es_offset.node {
+            node.set_attribute("cx", end.x.to_string().as_str())?;
+            node.set_attribute("cy", start.y.to_string().as_str())?;
         }
         if let Some(rect) = &mut self.rect {
             rect.set_attribute("x", (std::cmp::min(start.x, end.x)).to_string().as_str())?;

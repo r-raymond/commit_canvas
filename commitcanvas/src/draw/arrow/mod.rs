@@ -167,6 +167,26 @@ impl Shape for Arrow {
                     self.path
                         .set_attribute("marker-end", "url(#cc_arrow_head_provisional)")?;
                 }
+                CallbackId::StartEnd => {
+                    self.state = ArrowState::Moving {
+                        select_id: identifier,
+                        select: std::mem::take(select),
+                        fallback: Point::new(self.start.x, self.end.y),
+                    };
+                    self.path.set_attribute("class", "cc_arrow_provisional")?;
+                    self.path
+                        .set_attribute("marker-end", "url(#cc_arrow_head_provisional)")?;
+                }
+                CallbackId::EndStart => {
+                    self.state = ArrowState::Moving {
+                        select_id: identifier,
+                        select: std::mem::take(select),
+                        fallback: Point::new(self.end.x, self.start.y),
+                    };
+                    self.path.set_attribute("class", "cc_arrow_provisional")?;
+                    self.path
+                        .set_attribute("marker-end", "url(#cc_arrow_head_provisional)")?;
+                }
                 CallbackId::Thickness => {
                     self.thickness.increment();
                     self.path.set_attribute(
@@ -215,6 +235,14 @@ impl Shape for Arrow {
                     }
                     CallbackId::End => {
                         self.end = point;
+                    }
+                    CallbackId::StartEnd => {
+                        self.start.x = point.x;
+                        self.end.y = point.y;
+                    }
+                    CallbackId::EndStart => {
+                        self.end.x = point.x;
+                        self.start.y = point.y;
                     }
                     _ => {}
                 }
