@@ -17,6 +17,8 @@ rough = { path = "../rough" }
 erased-serde = "0.4"
 serde.workspace = true
 serde_yaml.workspace = true
+wasm-logger = "0.2.0"
+log = "0.4"
 
 [dependencies.web-sys]
 version = "0.3"

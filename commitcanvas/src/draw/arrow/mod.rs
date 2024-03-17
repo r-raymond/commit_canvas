@@ -108,6 +108,7 @@ impl Shape for Arrow {
     }
 
     fn select(&mut self) -> Result<(), JsValue> {
+        log::info!("arrow {} select", self.guid);
         if let ArrowState::Normal = self.state {
             let select =
                 SelectState::new(&self.document, &self.svg, self.start, self.end, true, false)?;
@@ -117,6 +118,7 @@ impl Shape for Arrow {
     }
 
     fn cancel(&mut self) -> Result<(), JsValue> {
+        log::info!("arrow {} cancel", self.guid);
         match self.state {
             ArrowState::Moving { fallback, .. } => {
                 self.update(fallback)?;
@@ -145,6 +147,7 @@ impl Shape for Arrow {
     }
 
     fn modify(&mut self, identifier: CallbackId) -> Result<(), JsValue> {
+        log::info!("arrow {} modify {:?}", self.guid, identifier);
         match &mut self.state {
             ArrowState::Selected { select } => match identifier {
                 CallbackId::Start => {
@@ -206,6 +209,7 @@ impl Shape for Arrow {
     }
 
     fn commit(&mut self) -> Result<(), JsValue> {
+        log::info!("arrow {} commit", self.guid);
         match &mut self.state {
             ArrowState::Moving { select, .. } => {
                 if self.start == self.end {
@@ -225,6 +229,7 @@ impl Shape for Arrow {
     }
 
     fn update(&mut self, point: Point) -> Result<(), JsValue> {
+        log::info!("arrow {} update {:?}", self.guid, point);
         match &mut self.state {
             ArrowState::Moving {
                 select_id, select, ..
@@ -255,6 +260,7 @@ impl Shape for Arrow {
     }
 
     fn unselect(&mut self) -> Result<(), JsValue> {
+        log::info!("arrow {} unselect", self.guid);
         self.state = ArrowState::Normal;
         Ok(())
     }
@@ -268,10 +274,12 @@ impl Shape for Arrow {
     }
 
     fn double_click(&mut self) -> Result<(), JsValue> {
+        log::info!("arrow {} double_click", self.guid);
         Ok(())
     }
 
     fn remove(&mut self) -> Result<(), JsValue> {
+        log::info!("arrow {} remove", self.guid);
         self.state = ArrowState::Removed;
         Ok(())
     }

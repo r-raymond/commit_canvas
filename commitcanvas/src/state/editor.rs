@@ -62,31 +62,37 @@ impl Editor {
         self.mode = mode;
         match self.mode {
             EditorMode::Normal => {
+                log::info!("normal mode");
                 self.svg.set_attribute("cursor", "normal")?;
                 self.marker.set_marker(false)?;
                 self.set_active_nav_button(Some("selectCanvas"))?;
             }
             EditorMode::Arrow => {
+                log::info!("arrow mode");
                 self.svg.set_attribute("cursor", "normal")?;
                 self.marker.set_marker(true)?;
                 self.set_active_nav_button(Some("arrowCanvas"))?;
             }
             EditorMode::Rect => {
+                log::info!("rect mode");
                 self.svg.set_attribute("cursor", "normal")?;
                 self.marker.set_marker(true)?;
                 self.set_active_nav_button(Some("rectCanvas"))?;
             }
-            EditorMode::Selected { item: _ } => {
+            EditorMode::Selected { item } => {
+                log::info!("selected mode: {}", item);
                 self.svg.set_attribute("cursor", "normal")?;
                 self.marker.set_marker(false)?;
                 self.set_active_nav_button(None)?;
             }
             EditorMode::Panning { .. } => {
+                log::info!("panning mode");
                 self.svg.set_attribute("cursor", "grabbing")?;
                 self.marker.set_marker(false)?;
                 self.set_active_nav_button(None)?;
             }
             EditorMode::Text { text: _ } => {
+                log::info!("text mode");
                 self.svg.set_attribute("cursor", "normal")?;
                 self.marker.set_marker(true)?;
                 self.set_active_nav_button(Some("textCanvas"))?;
