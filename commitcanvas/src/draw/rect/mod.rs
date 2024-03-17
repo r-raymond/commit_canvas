@@ -71,7 +71,7 @@ impl Shape for Rect {
         path.set_attribute("class", "cc_rect_provisional")?;
         svg.append_child(&path)?;
         let rect = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "rect")?;
-        rect.set_attribute("class", "cc_fill_none stroke-none")?;
+        rect.set_attribute("class", "cc_fill_none stroke-none cc_rect")?;
         svg.append_child(&rect)?;
         let closure = Closure::wrap(Box::new(move |_event: web_sys::MouseEvent| {
             STATE.with(|s| -> Result<_, JsValue> {
@@ -84,6 +84,7 @@ impl Shape for Rect {
         })
             as Box<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>);
         path.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
+        rect.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
         Ok(Self {
             document: document.clone(),
             svg: svg.clone(),
