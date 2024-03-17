@@ -109,7 +109,8 @@ impl Shape for Arrow {
 
     fn select(&mut self) -> Result<(), JsValue> {
         if let ArrowState::Normal = self.state {
-            let select = SelectState::new(&self.document, &self.svg, self.start, self.end, true)?;
+            let select =
+                SelectState::new(&self.document, &self.svg, self.start, self.end, true, false)?;
             self.state = ArrowState::Selected { select };
         }
         Ok(())
@@ -177,6 +178,7 @@ impl Shape for Arrow {
                     self.roughness.increment();
                     self.path.set_attribute("d", self.render().as_str())?;
                 }
+                CallbackId::Fill => {}
             },
             _ => {}
         };

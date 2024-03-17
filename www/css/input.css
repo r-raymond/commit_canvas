@@ -91,3 +91,71 @@
     @apply fill-transparent cursor-pointer stroke-primary stroke-2;
     stroke-dasharray: 4, 4;
 }
+
+.cc_fill_none {
+    @apply fill-none;
+}
+
+.cc_fill_red {
+    @apply fill-red-300 opacity-25;
+}
+
+.cc_fill_orange {
+    @apply fill-orange-300 opacity-25;
+}
+
+.cc_fill_amber {
+    @apply fill-amber-300 opacity-25;
+}
+
+.cc_fill_yellow {
+    @apply fill-yellow-300 opacity-25;
+}
+
+.cc_fill_lime {
+    @apply fill-lime-300 opacity-25;
+}
+
+.cc_fill_green {
+    @apply fill-green-300 opacity-25;
+}
+
+.cc_fill_emerald {
+    @apply fill-emerald-300 opacity-25;
+}
+
+.cc_fill_teal {
+    @apply fill-teal-300 opacity-25;
+}
+
+.cc_fill_cyan {
+    @apply fill-cyan-300 opacity-25;
+}
+
+.cc_fill_sky {
+    @apply fill-sky-300 opacity-25;
+}
+
+.cc_fill_blue {
+    @apply fill-blue-300 opacity-25;
+}
+
+.cc_fill_indigo {
+    @apply fill-indigo-300 opacity-25;
+}
+
+.cc_fill_purple {
+    @apply fill-purple-300 opacity-25;
+}
+
+.cc_fill_fuchsia {
+    @apply fill-fuchsia-300 opacity-25;
+}
+
+.cc_fill_pink {
+    @apply fill-pink-300 opacity-25;
+}
+
+.cc_fill_rose {
+    @apply fill-rose-300 opacity-25;
+}

@@ -7,7 +7,7 @@ use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 
-use super::select::{LineThickness, Roughness};
+use super::select::{Colors, LineThickness, Roughness};
 use super::Shape;
 
 enum RectState {
@@ -28,11 +28,13 @@ pub struct Rect {
     svg: web_sys::SvgElement,
     state: RectState,
     path: web_sys::Element,
+    rect: web_sys::Element,
     pub guid: i32,
     start: Point,
     end: Point,
     thickness: LineThickness,
     roughness: Roughness,
+    fill: Colors,
     #[allow(dead_code)]
     callback: Option<Closure<dyn FnMut(web_sys::MouseEvent) -> Result<(), JsValue>>>,
 }
@@ -68,6 +70,9 @@ impl Shape for Rect {
         let path = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
         path.set_attribute("class", "cc_rect_provisional")?;
         svg.append_child(&path)?;
+        let rect = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "rect")?;
+        rect.set_attribute("class", "cc_fill_none stroke-none")?;
+        svg.append_child(&rect)?;
         let closure = Closure::wrap(Box::new(move |_event: web_sys::MouseEvent| {
             STATE.with(|s| -> Result<_, JsValue> {
                 let mut state_ref = s.borrow_mut();
@@ -86,16 +91,19 @@ impl Shape for Rect {
             start,
             end: start,
             path,
+            rect,
             guid,
             thickness: LineThickness::default(),
             roughness: Roughness::default(),
+            fill: Colors::default(),
             callback: Some(closure),
         })
     }
 
     fn select(&mut self) -> Result<(), JsValue> {
         if let RectState::Normal = self.state {
-            let select = SelectState::new(&self.document, &self.svg, self.start, self.end, false)?;
+            let select =
+                SelectState::new(&self.document, &self.svg, self.start, self.end, false, true)?;
             self.state = RectState::Selected { select };
         }
         Ok(())
@@ -162,6 +170,30 @@ impl Shape for Rect {
                     self.roughness.increment();
                     self.path.set_attribute("d", self.render().as_str())?;
                 }
+                CallbackId::Fill => {
+                    self.fill.increment();
+                    let classes = self.rect.class_list();
+                    classes.remove_7(
+                        "cc_fill_none",
+                        "cc_fill_red",
+                        "cc_fill_orange",
+                        "cc_fill_amber",
+                        "cc_fill_yellow",
+                        "cc_fill_lime",
+                        "cc_fill_green",
+                    )?;
+                    classes.remove_7(
+                        "cc_fill_emerald",
+                        "cc_fill_teal",
+                        "cc_fill_cyan",
+                        "cc_fill_sky",
+                        "cc_fill_blue",
+                        "cc_fill_indigo",
+                        "cc_fill_purple",
+                    )?;
+                    classes.remove_3("cc_fill_fuchsia", "cc_fill_pink", "cc_fill_rose")?;
+                    classes.add_1(self.fill.to_class_name())?;
+                }
             },
             _ => {}
         }
@@ -209,6 +241,18 @@ impl Shape for Rect {
                 }
                 select.update(self.start, self.end)?;
                 self.path.set_attribute("d", self.render().as_str())?;
+                self.rect
+                    .set_attribute("x", self.start.x.to_string().as_str())?;
+                self.rect
+                    .set_attribute("y", self.start.y.to_string().as_str())?;
+                self.rect.set_attribute(
+                    "width",
+                    (self.end.x - self.start.x).abs().to_string().as_str(),
+                )?;
+                self.rect.set_attribute(
+                    "height",
+                    (self.end.y - self.start.y).abs().to_string().as_str(),
+                )?;
             }
             _ => {}
         }
