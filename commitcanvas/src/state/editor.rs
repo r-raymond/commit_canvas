@@ -250,6 +250,7 @@ impl Editor {
 
                         let text = textarea.value();
                         text_node.set_attribute("class", "cc_text")?;
+                        text_node.set_attribute("filter", "url(#cc_pencil_texture)")?;
 
                         // Map lines to tspan elements
                         let mut first = true;
