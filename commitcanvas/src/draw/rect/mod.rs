@@ -68,6 +68,7 @@ impl Shape for Rect {
         start: Point,
     ) -> Result<Self, JsValue> {
         let path = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
+        path.set_attribute("filter", "url(#cc_pencil_texture)")?;
         path.set_attribute("class", "cc_rect_provisional")?;
         svg.append_child(&path)?;
         let rect = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "rect")?;

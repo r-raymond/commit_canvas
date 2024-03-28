@@ -76,6 +76,7 @@ impl Shape for Arrow {
     {
         let path = document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")?;
         path.set_attribute("class", "cc_arrow")?;
+        path.set_attribute("filter", "url(#cc_pencil_texture)")?;
         path.set_attribute("marker-end", "url(#cc_arrow_head)")?;
         path.set_attribute(
             "stroke-width",
