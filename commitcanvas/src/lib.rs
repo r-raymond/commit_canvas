@@ -9,6 +9,7 @@ mod settings;
 mod state;
 mod types;
 mod utils;
+mod view;
 
 #[wasm_bindgen(start)]
 fn run() -> Result<(), JsValue> {

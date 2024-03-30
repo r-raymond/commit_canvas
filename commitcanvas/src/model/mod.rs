@@ -5,17 +5,17 @@ mod shape;
 use std::collections::HashMap;
 
 pub use crate::types::Guid;
+use crate::view::View;
 
-use self::{
-    events::{Event, EventHistory},
-    shape::Shape,
-};
+pub use events::{Event, EventHistory};
+pub use shape::Shape;
 
 pub struct Model {
     guid_generator: guid::GuidGenerator,
     shapes: HashMap<Guid, shape::Shape>,
     history: Vec<EventHistory>,
     history_index: usize,
+    views: Vec<Box<dyn View>>,
 }
 
 impl Model {
@@ -25,6 +25,7 @@ impl Model {
             shapes: HashMap::new(),
             history: Vec::new(),
             history_index: 0,
+            views: Vec::new(),
         }
     }
 
@@ -39,12 +40,10 @@ impl Model {
             self.add_to_history(history.clone());
             history.guid()
         })
-
-        // TODO: Notify views
     }
 
     fn apply(&mut self, event: Event) -> Option<EventHistory> {
-        match event {
+        let history = match event {
             Event::AddShape { data } => {
                 let guid = if let Some(guid) = data.guid {
                     guid
@@ -79,7 +78,17 @@ impl Model {
                     }
                 })
             }
+        };
+
+        if let Some(event) = &history {
+            for view in self.views.iter_mut() {
+                view.process_event(crate::view::Event::Modify {
+                    event: event.clone(),
+                });
+            }
         }
+
+        history
     }
 
     pub fn undo(&mut self) {
@@ -105,6 +114,10 @@ impl Model {
 
     pub fn get_shape(&self, guid: Guid) -> Option<&shape::Shape> {
         self.shapes.get(&guid)
+    }
+
+    pub fn get_shapes(&self) -> Vec<&shape::Shape> {
+        self.shapes.values().collect()
     }
 }
 
