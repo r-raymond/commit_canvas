@@ -116,8 +116,19 @@ impl Model {
         self.shapes.get(&guid)
     }
 
-    pub fn get_shapes(&self) -> Vec<&shape::Shape> {
-        self.shapes.values().collect()
+    pub fn add_view(&mut self, mut view: Box<dyn View>) {
+        view.process_event(crate::view::Event::Reload {
+            shapes: self.shapes.values().collect(),
+        });
+        self.views.push(view);
+    }
+
+    pub fn reload_views(&mut self) {
+        for view in self.views.iter_mut() {
+            view.process_event(crate::view::Event::Reload {
+                shapes: self.shapes.values().collect(),
+            });
+        }
     }
 }
 
