@@ -8,7 +8,11 @@ pub use crate::types::Guid;
 use crate::view::View;
 
 pub use events::{Event, EventHistory};
+pub use shape::ArrowDetails;
+pub use shape::RectDetails;
 pub use shape::Shape;
+pub use shape::ShapeDetails;
+pub use shape::TextDetails;
 
 pub struct Model {
     guid_generator: guid::GuidGenerator,

@@ -18,16 +18,16 @@ pub enum ShapeDetails {
 
 #[derive(Default, Clone, Debug, PartialEq)]
 pub struct Options {
-    stroke_color: options::Color,
-    roughness: options::Roughness,
-    thickness: options::Thickness,
+    pub stroke_color: options::Color,
+    pub roughness: options::Roughness,
+    pub thickness: options::Thickness,
 }
 
 #[derive(Clone, Debug)]
 pub struct Shape {
     pub guid: Guid,
-    pub top_left: Point,
-    pub bottom_right: Point,
+    pub start: Point,
+    pub end: Point,
     pub details: ShapeDetails,
     pub options: Options,
 }
@@ -60,8 +60,8 @@ impl Shape {
     ) -> Self {
         Self {
             guid,
-            top_left,
-            bottom_right,
+            start: top_left,
+            end: bottom_right,
             details,
             options,
         }
@@ -69,11 +69,11 @@ impl Shape {
 
     pub fn update(&mut self, update: ShapeUpdate) {
         if let Some(top_left) = update.top_left {
-            self.top_left = top_left;
+            self.start = top_left;
         }
 
         if let Some(bottom_right) = update.bottom_right {
-            self.bottom_right = bottom_right;
+            self.end = bottom_right;
         }
 
         if let Some(details) = update.details {
@@ -90,8 +90,8 @@ impl From<Shape> for ShapeCreate {
     fn from(shape: Shape) -> Self {
         Self {
             guid: Some(shape.guid),
-            top_left: shape.top_left,
-            bottom_right: shape.bottom_right,
+            top_left: shape.start,
+            bottom_right: shape.end,
             details: shape.details,
             options: shape.options,
         }
@@ -102,8 +102,8 @@ impl From<Shape> for ShapeUpdate {
     fn from(shape: Shape) -> Self {
         Self {
             guid: shape.guid,
-            top_left: Some(shape.top_left),
-            bottom_right: Some(shape.bottom_right),
+            top_left: Some(shape.start),
+            bottom_right: Some(shape.end),
             details: Some(shape.details),
             options: Some(shape.options),
         }

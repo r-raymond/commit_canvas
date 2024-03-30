@@ -168,6 +168,78 @@ impl Line {
     }
 }
 
+pub fn to_catmull_rom_spline(
+    start: (f32, f32),
+    end: (f32, f32),
+    roughness: f32,
+    count: i32,
+    end_damp: f32,
+) -> [Point; 4] {
+    let length = f32::sqrt((end.0 - start.0).powi(2) + (end.1 - start.1).powi(2));
+    let mut rng =
+        SmallRng::seed_from_u64((start.0 + start.1 + end.0 + end.1 + count as f32) as u64);
+    let roughness = f32::clamp(0.1 * roughness * length, 0.1, 100.0);
+    let r1 = f32::sqrt(rng.gen_range(0.0..roughness)) / end_damp;
+    let r2 = f32::sqrt(rng.gen_range(0.0..roughness)) / end_damp;
+    let phi1 = rng.gen_range(0.0..std::f32::consts::PI * 2.0);
+    let phi2 = rng.gen_range(0.0..std::f32::consts::PI * 2.0);
+    let mid_point_offset = 0.005 * length * rng.gen::<f32>();
+    let dis_along = rng.gen_range(-0.1..0.1);
+    let dis_orth = rng.gen_range(-0.1..0.1) * roughness;
+
+    let r_start = Point {
+        x: (start.0 as f32 + r1 * f32::cos(phi1)) as i32,
+        y: (start.1 as f32 + r1 * f32::sin(phi1)) as i32,
+    };
+    let r_end = Point {
+        x: (end.0 as f32 + r2 * f32::cos(phi2)) as i32,
+        y: (end.1 as f32 + r2 * f32::sin(phi2)) as i32,
+    };
+
+    let along = Vector::from_points(&r_start, &r_end).normalize();
+    let orth = Vector::new(-along.y, along.x);
+
+    let start = Point {
+        x: start.0 as i32,
+        y: start.1 as i32,
+    };
+
+    let end = Point {
+        x: end.0 as i32,
+        y: end.1 as i32,
+    };
+
+    let mid_point = start + &(0.5 * length * &along) + &(mid_point_offset * &orth);
+    let control_point = start + &((0.75 + dis_along) * length * &along) + &(dis_orth * &orth);
+
+    return [start, mid_point, control_point, end];
+}
+
+pub fn to_svg_path(
+    start: (f32, f32),
+    end: (f32, f32),
+    roughness: f32,
+    count: i32,
+    end_damp: f32,
+) -> String {
+    let mut path = String::new();
+    for i in 0..count {
+        let spline = to_catmull_rom_spline(start, end, roughness, i, end_damp);
+        path += &format!(
+            " M {} {} C {} {} {} {} {} {}",
+            spline[0].x,
+            spline[0].y,
+            spline[1].x,
+            spline[1].y,
+            spline[2].x,
+            spline[2].y,
+            spline[3].x,
+            spline[3].y
+        );
+    }
+    path
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

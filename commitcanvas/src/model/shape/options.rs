@@ -40,6 +40,16 @@ impl Default for Roughness {
     }
 }
 
+impl From<&Roughness> for f32 {
+    fn from(roughness: &Roughness) -> f32 {
+        match roughness {
+            Roughness::Low => 0.0,
+            Roughness::Medium => 0.4,
+            Roughness::High => 0.8,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum Thickness {
     Thin,
@@ -50,5 +60,15 @@ pub enum Thickness {
 impl Default for Thickness {
     fn default() -> Self {
         Thickness::Thin
+    }
+}
+
+impl From<&Thickness> for &'static str {
+    fn from(thickness: &Thickness) -> &'static str {
+        match thickness {
+            Thickness::Thin => "1.0",
+            Thickness::Medium => "2.0",
+            Thickness::Thick => "3.0",
+        }
     }
 }
