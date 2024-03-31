@@ -145,7 +145,7 @@ impl Line {
         let control_point =
             self.start + &((0.75 + dis_along) * length * &along) + &(dis_orth * &orth);
 
-        return [start, mid_point, control_point, end];
+        [start, mid_point, control_point, end]
     }
 
     pub fn to_svg_path(&self, roughness: f32, count: i32, end_damp: f32) -> String {
@@ -188,12 +188,12 @@ pub fn to_catmull_rom_spline(
     let dis_orth = rng.gen_range(-0.1..0.1) * roughness;
 
     let r_start = Point {
-        x: (start.0 as f32 + r1 * f32::cos(phi1)) as i32,
-        y: (start.1 as f32 + r1 * f32::sin(phi1)) as i32,
+        x: (start.0 + r1 * f32::cos(phi1)) as i32,
+        y: (start.1 + r1 * f32::sin(phi1)) as i32,
     };
     let r_end = Point {
-        x: (end.0 as f32 + r2 * f32::cos(phi2)) as i32,
-        y: (end.1 as f32 + r2 * f32::sin(phi2)) as i32,
+        x: (end.0 + r2 * f32::cos(phi2)) as i32,
+        y: (end.1 + r2 * f32::sin(phi2)) as i32,
     };
 
     let along = Vector::from_points(&r_start, &r_end).normalize();
@@ -212,7 +212,7 @@ pub fn to_catmull_rom_spline(
     let mid_point = start + &(0.5 * length * &along) + &(mid_point_offset * &orth);
     let control_point = start + &((0.75 + dis_along) * length * &along) + &(dis_orth * &orth);
 
-    return [start, mid_point, control_point, end];
+    [start, mid_point, control_point, end]
 }
 
 pub fn to_svg_path(

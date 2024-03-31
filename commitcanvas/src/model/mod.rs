@@ -9,10 +9,8 @@ use crate::view::View;
 
 pub use events::{Event, EventHistory};
 
-
 pub use shape::Shape;
 pub use shape::ShapeDetails;
-
 
 pub struct Model {
     guid_generator: guid::GuidGenerator,
@@ -86,9 +84,11 @@ impl Model {
 
         if let Some(event) = &history {
             for view in self.views.iter_mut() {
-                view.process_event(crate::view::Event::Modify {
+                if let Err(e) = view.process_event(crate::view::Event::Modify {
                     event: event.clone(),
-                });
+                }) {
+                    log::warn!("Error updating view {:?}", e);
+                }
             }
         }
 
@@ -121,17 +121,21 @@ impl Model {
     }
 
     pub fn add_view(&mut self, mut view: Box<dyn View>) {
-        view.process_event(crate::view::Event::Reload {
+        if let Err(e) = view.process_event(crate::view::Event::Reload {
             shapes: self.shapes.values().collect(),
-        });
+        }) {
+            log::warn!("Error updating view {:?}", e);
+        }
         self.views.push(view);
     }
 
     pub fn reload_views(&mut self) {
         for view in self.views.iter_mut() {
-            view.process_event(crate::view::Event::Reload {
+            if let Err(e) = view.process_event(crate::view::Event::Reload {
                 shapes: self.shapes.values().collect(),
-            });
+            }) {
+                log::warn!("Error updating view {:?}", e);
+            }
         }
     }
 }

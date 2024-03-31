@@ -79,7 +79,7 @@ impl View for UIView {
                         }
                     }
                     EventHistory::RemoveShape { shape } => {
-                        if let Some(_) = self.items.remove(&shape.guid) {
+                        if self.items.remove(&shape.guid).is_some() {
                             log::info!("Removing shape: {:?}", shape.guid);
                         } else {
                             log::warn!("Deleting nonexistent shape: {:?}", shape.guid);
