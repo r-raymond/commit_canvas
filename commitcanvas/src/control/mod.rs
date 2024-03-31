@@ -1,33 +1,24 @@
-use self::menu::setup;
+use self::menu::{setup, update_main_menu, MainMenuButton};
 
 mod menu;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-enum ButtonState {
-    Arrow,
-    Rect,
-    Text,
-    #[default]
-    Select,
-}
-
 pub struct Control {
-    button_state: ButtonState,
+    button_state: MainMenuButton,
 }
 
 impl Control {
     pub fn new() -> Control {
         setup().expect("Failed to setup menu");
+        let button_state = MainMenuButton::default();
+        update_main_menu(button_state).expect("Failed to update main menu");
         Control {
-            button_state: ButtonState::Select,
+            button_state: MainMenuButton::default(),
         }
     }
 
-    fn set_button_state(&mut self, button_state: ButtonState) {
-        self.button_state = button_state;
-    }
-
-    fn get_button_state(&self) -> ButtonState {
-        self.button_state
+    pub fn set_button_state(&mut self, state: MainMenuButton) {
+        log::info!("Setting button state to {:?}", state);
+        self.button_state = state;
+        update_main_menu(state).expect("Failed to update main menu");
     }
 }

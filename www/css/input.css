@@ -71,7 +71,7 @@
 }
 
 .cc_nav_active {
-    @apply bg-red-100;
+    @apply bg-red-100 hover:bg-red-200;
 }
 
 .cc_context_menu_button {
