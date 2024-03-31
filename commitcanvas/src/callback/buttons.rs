@@ -13,7 +13,7 @@ fn click_helper(_event: web_sys::MouseEvent, editor_mode: EditorMode) -> Result<
 }
 
 pub fn register(document: &web_sys::Document) -> Result<(), JsValue> {
-    for id in vec!["selectCanvas", "arrowCanvas", "textCanvas", "rectCanvas"] {
+    for id in ["selectCanvas", "arrowCanvas", "textCanvas", "rectCanvas"] {
         let button = document
             .get_element_by_id(id)
             .expect("No button found")

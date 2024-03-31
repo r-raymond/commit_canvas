@@ -32,7 +32,7 @@ impl State {
 }
 
 thread_local! {
-    pub static STATE: RefCell<Option<State>> = RefCell::new(None);
+    pub static STATE: RefCell<Option<State>> = const { RefCell::new(None) };
 }
 
 pub use marker::PIXEL_STEP;

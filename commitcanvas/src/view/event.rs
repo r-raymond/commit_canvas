@@ -1,5 +1,5 @@
 use crate::model::EventHistory;
-use crate::model::Guid;
+
 use crate::model::Shape;
 
 pub enum Event<'a> {

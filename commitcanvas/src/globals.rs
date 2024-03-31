@@ -1,5 +1,5 @@
 use crate::model::Model;
-use crate::view::View;
+
 use std::cell::RefCell;
 use wasm_bindgen::JsCast;
 

@@ -7,5 +7,5 @@ impl View {
         Self {}
     }
 
-    pub fn process_event(&mut self, event: Event) -> () {}
+    pub fn process_event(&mut self, event: Event) {}
 }

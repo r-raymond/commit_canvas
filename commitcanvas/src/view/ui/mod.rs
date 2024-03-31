@@ -47,7 +47,7 @@ impl View for UIView {
                     match shape.details {
                         ShapeDetails::Arrow(_) => {
                             log::info!("Rendering arrow: {:?}", shape.guid);
-                            let path = create_arrow(&shape)?;
+                            let path = create_arrow(shape)?;
                             SVG.with(|svg| svg.append_child(&path))?;
                             self.items.insert(shape.guid, Item::Arrow { path });
                         }

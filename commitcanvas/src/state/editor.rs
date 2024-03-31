@@ -147,7 +147,7 @@ impl Editor {
             EditorMode::Arrow => {
                 if let Some(coords) = self.marker.nearest_marker_coords {
                     let mut shape =
-                        Arrow::new(&self.document, &self.svg, self.guid.next(), coords.clone())?;
+                        Arrow::new(&self.document, &self.svg, self.guid.next(), coords)?;
                     shape.select()?;
                     shape.modify(CallbackId::End)?;
                     self.set_mode(EditorMode::Selected { item: shape.guid })?;
@@ -157,7 +157,7 @@ impl Editor {
             EditorMode::Rect => {
                 if let Some(coords) = self.marker.nearest_marker_coords {
                     let mut shape =
-                        Rect::new(&self.document, &self.svg, self.guid.next(), coords.clone())?;
+                        Rect::new(&self.document, &self.svg, self.guid.next(), coords)?;
                     shape.select()?;
                     shape.modify(CallbackId::End)?;
                     self.set_mode(EditorMode::Selected { item: shape.guid })?;
@@ -206,7 +206,7 @@ impl Editor {
             EditorMode::Normal => {}
             EditorMode::Panning { .. } => {
                 self.set_mode(EditorMode::Normal)?;
-                self.marker.offset = self.offset.clone();
+                self.marker.offset = self.offset;
             }
             EditorMode::Selected { item } => {
                 if let Some(shape) = self.shapes.get_mut(item) {

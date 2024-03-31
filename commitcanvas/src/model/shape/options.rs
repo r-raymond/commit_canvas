@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
+#[derive(Default)]
 pub enum Color {
+    #[default]
     None,
     Red,
     Organge,
@@ -21,24 +23,18 @@ pub enum Color {
     Rose,
 }
 
-impl Default for Color {
-    fn default() -> Self {
-        Color::None
-    }
-}
+
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
+#[derive(Default)]
 pub enum Roughness {
     Low,
+    #[default]
     Medium,
     High,
 }
 
-impl Default for Roughness {
-    fn default() -> Self {
-        Roughness::Medium
-    }
-}
+
 
 impl From<&Roughness> for f32 {
     fn from(roughness: &Roughness) -> f32 {
@@ -51,17 +47,15 @@ impl From<&Roughness> for f32 {
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
+#[derive(Default)]
 pub enum Thickness {
+    #[default]
     Thin,
     Medium,
     Thick,
 }
 
-impl Default for Thickness {
-    fn default() -> Self {
-        Thickness::Thin
-    }
-}
+
 
 impl From<&Thickness> for &'static str {
     fn from(thickness: &Thickness) -> &'static str {
