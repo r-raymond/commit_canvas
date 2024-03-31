@@ -1,1 +1,1 @@
-pub const PIXEL_STEP: i32 = 6;
+pub const PIXEL_STEP: f32 = 6.;

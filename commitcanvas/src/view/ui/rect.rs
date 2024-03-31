@@ -42,14 +42,19 @@ pub fn create_rect(shape: &Shape) -> Result<Item, JsValue> {
             ),
         );
 
-        let path = DOCUMENT.with(|document| document.create_element("path"))?;
+        let path = DOCUMENT.with(|document| {
+            document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path")
+        })?;
         path.set_attribute("d", &svg_path)?;
         path.set_attribute("class", "cc_rect")?;
         path.set_attribute("filter", "url(#cc_pencil_texture)")?;
-        let rect = DOCUMENT.with(|document| document.create_element("rect"))?;
+        let rect = DOCUMENT.with(|document| {
+            document.create_element_ns(Some("http://www.w3.org/2000/svg"), "rect")
+        })?;
         rect.class_list()
             .add_2("cc_rect_fill", (&d.background).into())?;
-        let group = DOCUMENT.with(|document| document.create_element("g"))?;
+        let group = DOCUMENT
+            .with(|document| document.create_element_ns(Some("http://www.w3.org/2000/svg"), "g"))?;
         group.set_id(&to_identifier(shape.guid));
         group.append_child(&path)?;
         group.append_child(&rect)?;

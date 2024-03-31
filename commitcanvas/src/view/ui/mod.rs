@@ -56,12 +56,12 @@ impl View for UIView {
                 for shape in shapes {
                     match shape.details {
                         ShapeDetails::Arrow(_) => {
-                            log::info!("Rendering arrow: {:?}", shape.guid);
+                            log::info!("rendering arrow: {:?}", shape.guid);
                             let item = create_arrow(shape)?;
                             self.items.insert(shape.guid, item);
                         }
                         ShapeDetails::Rect(_) => {
-                            log::info!("Rendering rect: {:?}", shape.guid);
+                            log::info!("rendering rect: {:?}", shape.guid);
                             let item = create_rect(shape)?;
                             self.items.insert(shape.guid, item);
                         }
@@ -76,12 +76,12 @@ impl View for UIView {
                     EventHistory::AddShape { shape } => {
                         match shape.details {
                             ShapeDetails::Arrow(_) => {
-                                log::info!("Rendering arrow: {:?}", shape.guid);
+                                log::info!("rendering arrow: {:?}", shape.guid);
                                 let item = create_arrow(&shape)?;
                                 self.items.insert(shape.guid, item);
                             }
                             ShapeDetails::Rect(_) => {
-                                log::info!("Rendering rect: {:?}", shape.guid);
+                                log::info!("rendering rect: {:?}", shape.guid);
                                 let item = create_arrow(&shape)?;
                                 self.items.insert(shape.guid, item);
                             }
@@ -92,9 +92,9 @@ impl View for UIView {
                     }
                     EventHistory::RemoveShape { shape } => {
                         if self.items.remove(&shape.guid).is_some() {
-                            log::info!("Removing shape: {:?}", shape.guid);
+                            log::info!("removing shape: {:?}", shape.guid);
                         } else {
-                            log::warn!("Deleting nonexistent shape: {:?}", shape.guid);
+                            log::warn!("deleting nonexistent shape: {:?}", shape.guid);
                         }
                     }
                     EventHistory::ModifyShape { to, .. } => {

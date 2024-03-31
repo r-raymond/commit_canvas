@@ -22,7 +22,8 @@ pub fn create_arrow(shape: &Shape) -> Result<Item, JsValue> {
     path.set_attribute("filter", "url(#cc_pencil_texture)")?;
     path.set_attribute("marker-end", "url(#cc_arrow_head)")?;
     path.set_attribute("stroke-width", (&shape.options.thickness).into())?;
-    let group = DOCUMENT.with(|document| document.create_element("g"))?;
+    let group = DOCUMENT
+        .with(|document| document.create_element_ns(Some("http://www.w3.org/2000/svg"), "g"))?;
     group.set_id(&to_identifier(shape.guid));
     group.append_child(&path)?;
     SVG_VIEW_GROUP.with(|svg| svg.append_child(&group))?;

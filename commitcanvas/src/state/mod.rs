@@ -15,8 +15,8 @@ pub struct State {
 
 impl State {
     pub fn new() -> Result<Self, JsValue> {
-        let window = web_sys::window().expect("No window found");
-        let document = window.document().expect("No document found");
+        let window = web_sys::window().expect("no window found");
+        let document = window.document().expect("no document found");
         let svg = document
             .get_element_by_id("svgCanvas")
             .expect("No svgCanvas found")

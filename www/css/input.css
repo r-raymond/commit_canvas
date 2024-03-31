@@ -7,7 +7,7 @@
     @apply fill-stone-700 text-stone-700;
 }
 
-#cc_nearest_marker {
+.cc_nearest_marker {
     @apply fill-primary;
 }
 

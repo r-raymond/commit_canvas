@@ -5,10 +5,6 @@ mod text;
 
 use crate::types::{Guid, Point};
 
-pub use arrow::State as ArrowDetails;
-pub use rect::State as RectDetails;
-pub use text::State as TextDetails;
-
 #[derive(Clone, Debug, PartialEq)]
 pub enum ShapeDetails {
     Arrow(arrow::State),

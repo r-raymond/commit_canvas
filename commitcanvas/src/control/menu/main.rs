@@ -74,7 +74,7 @@ pub fn setup() -> Result<(), JsValue> {
             i.set_inner_html(menu_button.as_icon());
             button.append_child(&i)?;
             let state = *menu_button;
-            let closure = Closure::<dyn FnMut()>::new(move || {
+            let closure = Closure::<dyn Fn()>::new(move || {
                 CONTROL.with(|c| {
                     c.borrow_mut().set_button_state(state);
                 });

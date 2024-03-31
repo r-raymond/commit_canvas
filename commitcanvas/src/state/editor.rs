@@ -156,8 +156,7 @@ impl Editor {
             }
             EditorMode::Rect => {
                 if let Some(coords) = self.marker.nearest_marker_coords {
-                    let mut shape =
-                        Rect::new(&self.document, &self.svg, self.guid.next(), coords)?;
+                    let mut shape = Rect::new(&self.document, &self.svg, self.guid.next(), coords)?;
                     shape.select()?;
                     shape.modify(CallbackId::End)?;
                     self.set_mode(EditorMode::Selected { item: shape.guid })?;
@@ -291,7 +290,9 @@ impl Editor {
                         //fo_wrapper
                         //    .style()
                         //    .set_property("-webkit-transform", "rotate(20deg)")?;
-                        let new_ta = self.document.create_element("textarea")?;
+                        let new_ta = self
+                            .document
+                            .create_element_ns(Some("http://www.w3.org/2000/svg"), "textarea")?;
                         new_ta.set_attribute("class", "cc_textarea")?;
                         new_ta.set_id("current_textarea");
                         fo_wrapper.append_child(&new_ta)?;

@@ -52,7 +52,7 @@ impl Model {
                 } else {
                     self.guid_generator.next()
                 };
-                log::info!("Adding shape: {guid}");
+                log::info!("adding shape: {guid}");
                 let shape = Shape::new(
                     guid,
                     data.top_left,
@@ -64,13 +64,13 @@ impl Model {
                 Some(EventHistory::AddShape { shape })
             }
             Event::RemoveShape { guid } => {
-                log::info!("Removing shape: {guid}");
+                log::info!("removing shape: {guid}");
                 self.shapes
                     .remove(&guid)
                     .map(|shape| EventHistory::RemoveShape { shape })
             }
             Event::ModifyShape { guid, data } => {
-                log::info!("Modifying shape: {guid}");
+                log::info!("modifying shape: {guid}");
                 self.shapes.get_mut(&guid).map(|shape| {
                     let old_shape = shape.clone();
                     shape.update(data);
@@ -99,7 +99,7 @@ impl Model {
         if self.history_index > 0 {
             self.history_index -= 1;
             if let Some(history) = self.history.get(self.history_index) {
-                log::info!("Undoing event");
+                log::info!("undoing event");
                 let event = Event::from(history.clone().revert());
                 self.apply(event);
             }
@@ -109,6 +109,7 @@ impl Model {
     pub fn redo(&mut self) {
         if self.history_index < self.history.len() {
             if let Some(history) = self.history.get(self.history_index) {
+                log::info!("redoing event");
                 self.history_index += 1;
                 let event = Event::from(history.clone());
                 self.apply(event);
