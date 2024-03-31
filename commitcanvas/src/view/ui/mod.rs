@@ -1,25 +1,34 @@
 mod arrow;
+mod rect;
 use arrow::create_arrow;
 
 use std::collections::HashMap;
 
-use rough::to_svg_path;
 use wasm_bindgen::JsValue;
+
+use self::{arrow::update_arrow, rect::update_rect};
 
 use super::View;
 use crate::{
-    globals::SVG,
     model::{EventHistory, Guid, ShapeDetails},
+    view::ui::rect::create_rect,
 };
 
 pub struct UIView {
     pub items: HashMap<Guid, Item>,
 }
 
-enum Item {
-    Arrow { path: web_sys::Element },
-    Rect { path: web_sys::Element },
-    Text { text: web_sys::Element },
+pub enum Item {
+    Arrow {
+        path: web_sys::Element,
+    },
+    Rect {
+        path: web_sys::Element,
+        rect: web_sys::Element,
+    },
+    Text {
+        text: web_sys::Element,
+    },
 }
 
 impl Drop for Item {
@@ -28,8 +37,9 @@ impl Drop for Item {
             Item::Arrow { path } => {
                 path.remove();
             }
-            Item::Rect { path } => {
+            Item::Rect { path, rect } => {
                 path.remove();
+                rect.remove();
             }
             Item::Text { text } => {
                 text.remove();
@@ -47,12 +57,13 @@ impl View for UIView {
                     match shape.details {
                         ShapeDetails::Arrow(_) => {
                             log::info!("Rendering arrow: {:?}", shape.guid);
-                            let path = create_arrow(shape)?;
-                            SVG.with(|svg| svg.append_child(&path))?;
-                            self.items.insert(shape.guid, Item::Arrow { path });
+                            let item = create_arrow(shape)?;
+                            self.items.insert(shape.guid, item);
                         }
                         ShapeDetails::Rect(_) => {
-                            // TODO
+                            log::info!("Rendering rect: {:?}", shape.guid);
+                            let item = create_rect(shape)?;
+                            self.items.insert(shape.guid, item);
                         }
                         ShapeDetails::Text(_) => {
                             // TODO
@@ -66,12 +77,13 @@ impl View for UIView {
                         match shape.details {
                             ShapeDetails::Arrow(_) => {
                                 log::info!("Rendering arrow: {:?}", shape.guid);
-                                let path = create_arrow(&shape)?;
-                                SVG.with(|svg| svg.append_child(&path))?;
-                                self.items.insert(shape.guid, Item::Arrow { path });
+                                let item = create_arrow(&shape)?;
+                                self.items.insert(shape.guid, item);
                             }
                             ShapeDetails::Rect(_) => {
-                                // TODO
+                                log::info!("Rendering rect: {:?}", shape.guid);
+                                let item = create_arrow(&shape)?;
+                                self.items.insert(shape.guid, item);
                             }
                             ShapeDetails::Text(_) => {
                                 // TODO
@@ -85,24 +97,21 @@ impl View for UIView {
                             log::warn!("Deleting nonexistent shape: {:?}", shape.guid);
                         }
                     }
-                    EventHistory::ModifyShape { from, to } => {
+                    EventHistory::ModifyShape { to, .. } => {
                         match to.details {
                             ShapeDetails::Arrow(_) => {
-                                if let Some(Item::Arrow { path }) = self.items.get_mut(&to.guid) {
-                                    let svg_path = to_svg_path(
-                                        to.start.into(),
-                                        to.end.into(),
-                                        (&to.options.roughness).into(),
-                                        2,
-                                        2.0,
-                                    );
-                                    path.set_attribute("d", &svg_path)?;
+                                if let Some(item) = self.items.get(&to.guid) {
+                                    update_arrow(&to, item)?;
                                 } else {
-                                    log::warn!("Modifying nonexistent shape: {:?}", to.guid);
+                                    log::warn!("Updating nonexistent shape: {:?}", to.guid);
                                 }
                             }
                             ShapeDetails::Rect(_) => {
-                                // TODO
+                                if let Some(item) = self.items.get(&to.guid) {
+                                    update_rect(&to, item)?;
+                                } else {
+                                    log::warn!("Updating nonexistent shape: {:?}", to.guid);
+                                }
                             }
                             ShapeDetails::Text(_) => {
                                 // TODO
