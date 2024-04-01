@@ -148,6 +148,7 @@ impl Control {
         match self.state {
             State::Modifying { .. } => {
                 self.state = State::Normal;
+                self.set_button_state(MainMenuButton::default());
             }
             _ => {}
         }
