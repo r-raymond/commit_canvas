@@ -7,12 +7,14 @@ use crate::types::{Guid, Point};
 
 pub use arrow::State as ArrowDetails;
 pub use rect::State as RectDetails;
+#[allow(unused_imports)]
 pub use text::State as TextDetails;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ShapeDetails {
     Arrow(arrow::State),
     Rect(rect::State),
+    #[allow(unused)]
     Text(text::State),
 }
 

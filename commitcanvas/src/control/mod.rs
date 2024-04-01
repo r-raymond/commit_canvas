@@ -84,22 +84,19 @@ impl Control {
                     .expect("failed to update marker");
             }
 
-            match self.state {
-                State::Modifying { guid } => {
-                    let (x, y) = coords_to_pixels(self.mouse_coords);
-                    let event = Event::Modify {
+            if let State::Modifying { guid } = self.state {
+                let (x, y) = coords_to_pixels(self.mouse_coords);
+                let event = Event::Modify {
+                    guid,
+                    data: ShapeUpdate {
                         guid,
-                        data: ShapeUpdate {
-                            guid,
-                            start: None,
-                            end: Some(crate::types::Point { x, y }),
-                            details: None,
-                            options: None,
-                        },
-                    };
-                    self.model.process_event(event);
-                }
-                _ => {}
+                        start: None,
+                        end: Some(crate::types::Point { x, y }),
+                        details: None,
+                        options: None,
+                    },
+                };
+                self.model.process_event(event);
             }
         }
     }
@@ -145,12 +142,9 @@ impl Control {
 
     pub fn mouse_up(&mut self) {
         log::info!("mouse up");
-        match self.state {
-            State::Modifying { .. } => {
-                self.state = State::Normal;
-                self.set_button_state(MainMenuButton::default());
-            }
-            _ => {}
+        if let State::Modifying { .. } = self.state {
+            self.state = State::Normal;
+            self.set_button_state(MainMenuButton::default());
         }
     }
 

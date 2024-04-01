@@ -27,6 +27,7 @@ pub enum Item {
         path: web_sys::Element,
         rect: web_sys::Element,
     },
+    #[allow(dead_code)]
     Text {
         text: web_sys::Element,
     },

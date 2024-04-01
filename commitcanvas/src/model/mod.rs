@@ -9,7 +9,7 @@ use crate::view::View;
 
 pub use events::{Event, EventHistory};
 
-pub use shape::{ArrowDetails, RectDetails, Options, ShapeDetails};
+pub use shape::{ArrowDetails, Options, RectDetails, ShapeDetails};
 pub use shape::{Shape, ShapeCreate, ShapeUpdate};
 
 pub struct Model {
@@ -113,6 +113,7 @@ impl Model {
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_shape(&self, guid: Guid) -> Option<&shape::Shape> {
         self.shapes.get(&guid)
     }
@@ -126,6 +127,7 @@ impl Model {
         self.views.push(view);
     }
 
+    #[allow(dead_code)]
     pub fn reload_views(&mut self) {
         for view in self.views.iter_mut() {
             if let Err(e) = view.process_event(crate::view::Event::Reload {
