@@ -9,8 +9,8 @@ use crate::view::View;
 
 pub use events::{Event, EventHistory};
 
-pub use shape::Shape;
-pub use shape::ShapeDetails;
+pub use shape::{ArrowDetails, Options, RectDetails, ShapeDetails, TextDetails};
+pub use shape::{Shape, ShapeCreate, ShapeUpdate};
 
 pub struct Model {
     guid_generator: guid::GuidGenerator,
@@ -53,13 +53,7 @@ impl Model {
                     self.guid_generator.next()
                 };
                 log::info!("adding shape: {guid}");
-                let shape = Shape::new(
-                    guid,
-                    data.top_left,
-                    data.bottom_right,
-                    data.details,
-                    data.options,
-                );
+                let shape = Shape::new(guid, data.start, data.end, data.details, data.options);
                 self.shapes.insert(guid, shape.clone());
                 Some(EventHistory::Add { shape })
             }
@@ -152,8 +146,8 @@ mod tests {
         let mut model = Model::new();
         let mut data = shape::ShapeCreate {
             guid: None,
-            top_left: crate::types::Point { x: 0.0, y: 0.0 },
-            bottom_right: crate::types::Point { x: 10.0, y: 10.0 },
+            start: crate::types::Point { x: 0.0, y: 0.0 },
+            end: crate::types::Point { x: 10.0, y: 10.0 },
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
@@ -175,8 +169,8 @@ mod tests {
         let mut model = Model::new();
         let mut data = shape::ShapeCreate {
             guid: None,
-            top_left: crate::types::Point { x: 0.0, y: 0.0 },
-            bottom_right: crate::types::Point { x: 10.0, y: 10.0 },
+            start: crate::types::Point { x: 0.0, y: 0.0 },
+            end: crate::types::Point { x: 10.0, y: 10.0 },
             details: super::shape::ShapeDetails::Rect(super::shape::RectDetails::default()),
             options: super::shape::Options::default(),
         };
@@ -198,8 +192,8 @@ mod tests {
         let mut model = Model::new();
         let mut data = shape::ShapeCreate {
             guid: None,
-            top_left: crate::types::Point { x: 0.0, y: 0.0 },
-            bottom_right: crate::types::Point { x: 10.0, y: 10.0 },
+            start: crate::types::Point { x: 0.0, y: 0.0 },
+            end: crate::types::Point { x: 10.0, y: 10.0 },
             details: super::shape::ShapeDetails::Text(super::shape::TextDetails::default()),
             options: super::shape::Options::default(),
         };
@@ -221,8 +215,8 @@ mod tests {
         let mut model = Model::new();
         let mut data1 = shape::ShapeCreate {
             guid: None,
-            top_left: crate::types::Point { x: 0.0, y: 0.0 },
-            bottom_right: crate::types::Point { x: 10.0, y: 10.0 },
+            start: crate::types::Point { x: 0.0, y: 0.0 },
+            end: crate::types::Point { x: 10.0, y: 10.0 },
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
@@ -232,8 +226,8 @@ mod tests {
 
         let mut data2 = shape::ShapeCreate {
             guid: None,
-            top_left: crate::types::Point { x: 0.0, y: 0.0 },
-            bottom_right: crate::types::Point { x: 20.0, y: 20.0 },
+            start: crate::types::Point { x: 0.0, y: 0.0 },
+            end: crate::types::Point { x: 20.0, y: 20.0 },
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
@@ -277,8 +271,8 @@ mod tests {
         let mut model = Model::new();
         let mut data = shape::ShapeCreate {
             guid: None,
-            top_left: crate::types::Point { x: 0.0, y: 0.0 },
-            bottom_right: crate::types::Point { x: 10.0, y: 10.0 },
+            start: crate::types::Point { x: 0.0, y: 0.0 },
+            end: crate::types::Point { x: 10.0, y: 10.0 },
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };

@@ -9,7 +9,8 @@ use wasm_bindgen::JsValue;
 use super::Item;
 
 pub fn create_arrow(shape: &Shape) -> Result<Item, JsValue> {
-    let path = DOCUMENT.with(|document| document.create_element("path"))?;
+    let path = DOCUMENT
+        .with(|document| document.create_element_ns(Some("http://www.w3.org/2000/svg"), "path"))?;
     let svg_path = to_svg_path(
         shape.start.into(),
         shape.end.into(),

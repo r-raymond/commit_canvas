@@ -1,10 +1,5 @@
-use wasm_bindgen::closure::Closure;
-use wasm_bindgen::JsCast;
-use web_sys::MouseEvent;
-
 use crate::{
-    globals::{CONTROL, SVG},
-    model::Model,
+    model::{ArrowDetails, Event, Guid, Model, Options, ShapeCreate, ShapeDetails, ShapeUpdate},
     utils::{coords_to_pixels, pixels_to_coords},
     view::UIView,
 };
@@ -15,12 +10,22 @@ mod callback;
 mod marker;
 mod menu;
 
+#[derive(Debug, Default)]
+enum State {
+    #[default]
+    Normal,
+    Modifying {
+        guid: Guid,
+    },
+}
+
 pub struct Control {
     button_state: MainMenuButton,
     mouse_pixel_coords: (f32, f32),
     mouse_coords: (i32, i32),
     marker: Option<marker::Marker>,
     model: Model,
+    state: State,
 }
 
 impl Control {
@@ -31,15 +36,6 @@ impl Control {
         let button_state = MainMenuButton::default();
         update_main_menu(button_state).expect("failed to update main menu");
 
-        let mouse_update_closure = Closure::<dyn Fn(MouseEvent)>::new(move |event: MouseEvent| {
-            CONTROL.with(|c| {
-                let mut control = c.borrow_mut();
-                control.mouse_update((event.offset_x() as f32, event.offset_y() as f32));
-            });
-        });
-        SVG.with(|s| s.set_onmousemove(Some(mouse_update_closure.as_ref().unchecked_ref())));
-        mouse_update_closure.forget();
-
         let mut model = Model::new();
         model.add_view(Box::new(UIView::new()));
 
@@ -49,6 +45,7 @@ impl Control {
             mouse_coords: (0, 0),
             marker: None,
             model,
+            state: State::default(),
         }
     }
 
@@ -83,6 +80,66 @@ impl Control {
                     .update(coords_to_pixels(new_coords))
                     .expect("failed to update marker");
             }
+
+            match self.state {
+                State::Modifying { guid } => {
+                    let (x, y) = coords_to_pixels(self.mouse_coords);
+                    let event = Event::Modify {
+                        guid,
+                        data: ShapeUpdate {
+                            guid,
+                            start: None,
+                            end: Some(crate::types::Point {
+                                x: x as f32,
+                                y: y as f32,
+                            }),
+                            details: None,
+                            options: None,
+                        },
+                    };
+                    self.model.process_event(event);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    pub fn mouse_down(&mut self) {
+        log::info!("mouse down");
+        match self.button_state {
+            MainMenuButton::Arrow => {
+                self.marker = None;
+                let (x, y) = coords_to_pixels(self.mouse_coords);
+                let event = Event::Add {
+                    data: ShapeCreate {
+                        guid: None,
+                        start: crate::types::Point {
+                            x: x as f32,
+                            y: y as f32,
+                        },
+                        end: crate::types::Point {
+                            x: x as f32,
+                            y: y as f32,
+                        },
+                        details: ShapeDetails::Arrow(ArrowDetails::default()),
+                        options: Options::default(),
+                    },
+                };
+                if let Some(guid) = self.model.process_event(event) {
+                    self.state = State::Modifying { guid };
+                }
+            }
+            _ => {}
+        }
+    }
+
+    pub fn mouse_up(&mut self) {
+        log::info!("mouse up");
+        match self.state {
+            State::Modifying { .. } => {
+                self.state = State::Normal;
+            }
+            _ => {}
         }
     }
 
