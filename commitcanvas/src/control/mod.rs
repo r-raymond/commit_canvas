@@ -1,5 +1,8 @@
 use crate::{
-    model::{ArrowDetails, Event, Guid, Model, Options, ShapeCreate, ShapeDetails, ShapeUpdate},
+    model::{
+        ArrowDetails, Event, Guid, Model, Options, RectDetails, ShapeCreate, ShapeDetails,
+        ShapeUpdate,
+    },
     utils::{coords_to_pixels, pixels_to_coords},
     view::UIView,
 };
@@ -113,6 +116,22 @@ impl Control {
                         start: crate::types::Point { x, y },
                         end: crate::types::Point { x, y },
                         details: ShapeDetails::Arrow(ArrowDetails::default()),
+                        options: Options::default(),
+                    },
+                };
+                if let Some(guid) = self.model.process_event(event) {
+                    self.state = State::Modifying { guid };
+                }
+            }
+            MainMenuButton::Rect => {
+                self.marker = None;
+                let (x, y) = coords_to_pixels(self.mouse_coords);
+                let event = Event::Add {
+                    data: ShapeCreate {
+                        guid: None,
+                        start: crate::types::Point { x, y },
+                        end: crate::types::Point { x, y },
+                        details: ShapeDetails::Rect(RectDetails::default()),
                         options: Options::default(),
                     },
                 };

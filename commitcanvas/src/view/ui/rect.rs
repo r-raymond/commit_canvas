@@ -61,7 +61,7 @@ pub fn create_rect(shape: &Shape) -> Result<Item, JsValue> {
         SVG_VIEW_GROUP.with(|svg| svg.append_child(&group))?;
         Ok(Item::Rect { path, rect })
     } else {
-        Err(JsValue::from_str("Called create_rect with non-rect shape"))
+        Err(JsValue::from_str("called create_rect with non-rect shape"))
     }
 }
 
@@ -124,7 +124,7 @@ pub fn update_rect(shape: &Shape, item: &Item) -> Result<(), JsValue> {
             classes.add_1((&d.background).into())?;
             Ok(())
         } else {
-            Err(JsValue::from_str("Called update_rect with non-rect shape"))
+            Err(JsValue::from_str("called update_rect with non-rect shape"))
         }
     } else {
         Err(JsValue::from_str("Called update_rect with non-rect item"))

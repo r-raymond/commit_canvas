@@ -44,6 +44,6 @@ pub fn update_arrow(shape: &Shape, item: &Item) -> Result<(), JsValue> {
         path.set_attribute("stroke-width", (&shape.options.thickness).into())?;
         Ok(())
     } else {
-        Err(JsValue::from_str("Called update_arrow with non-arrow item"))
+        Err(JsValue::from_str("called update_arrow with non-arrow item"))
     }
 }

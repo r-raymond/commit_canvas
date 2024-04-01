@@ -18,6 +18,7 @@ pub struct UIView {
     pub items: HashMap<Guid, Item>,
 }
 
+#[derive(Debug)]
 pub enum Item {
     Arrow {
         path: web_sys::Element,
@@ -90,7 +91,7 @@ impl View for UIView {
                             }
                             ShapeDetails::Rect(_) => {
                                 log::info!("rendering rect: {:?}", shape.guid);
-                                let item = create_arrow(&shape)?;
+                                let item = create_rect(&shape)?;
                                 self.items.insert(shape.guid, item);
                             }
                             ShapeDetails::Text(_) => {

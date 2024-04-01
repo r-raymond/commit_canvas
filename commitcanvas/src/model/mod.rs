@@ -9,7 +9,7 @@ use crate::view::View;
 
 pub use events::{Event, EventHistory};
 
-pub use shape::{ArrowDetails, Options, ShapeDetails};
+pub use shape::{ArrowDetails, RectDetails, Options, ShapeDetails};
 pub use shape::{Shape, ShapeCreate, ShapeUpdate};
 
 pub struct Model {
