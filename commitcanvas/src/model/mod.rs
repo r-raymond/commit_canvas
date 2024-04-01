@@ -46,7 +46,7 @@ impl Model {
 
     fn apply(&mut self, event: Event) -> Option<EventHistory> {
         let history = match event {
-            Event::AddShape { data } => {
+            Event::Add { data } => {
                 let guid = if let Some(guid) = data.guid {
                     guid
                 } else {
@@ -61,20 +61,20 @@ impl Model {
                     data.options,
                 );
                 self.shapes.insert(guid, shape.clone());
-                Some(EventHistory::AddShape { shape })
+                Some(EventHistory::Add { shape })
             }
-            Event::RemoveShape { guid } => {
+            Event::Remove { guid } => {
                 log::info!("removing shape: {guid}");
                 self.shapes
                     .remove(&guid)
-                    .map(|shape| EventHistory::RemoveShape { shape })
+                    .map(|shape| EventHistory::Remove { shape })
             }
-            Event::ModifyShape { guid, data } => {
+            Event::Modify { guid, data } => {
                 log::info!("modifying shape: {guid}");
                 self.shapes.get_mut(&guid).map(|shape| {
                     let old_shape = shape.clone();
                     shape.update(data);
-                    EventHistory::ModifyShape {
+                    EventHistory::Modify {
                         from: old_shape,
                         to: shape.clone(),
                     }
@@ -96,6 +96,7 @@ impl Model {
     }
 
     pub fn undo(&mut self) {
+        log::info!("calling model undo");
         if self.history_index > 0 {
             self.history_index -= 1;
             if let Some(history) = self.history.get(self.history_index) {
@@ -107,6 +108,7 @@ impl Model {
     }
 
     pub fn redo(&mut self) {
+        log::info!("calling model redo");
         if self.history_index < self.history.len() {
             if let Some(history) = self.history.get(self.history_index) {
                 log::info!("redoing event");
@@ -155,7 +157,7 @@ mod tests {
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
-        let event = Event::AddShape { data: data.clone() };
+        let event = Event::Add { data: data.clone() };
 
         let guid = model.process_event(event);
         data.guid = guid;
@@ -178,7 +180,7 @@ mod tests {
             details: super::shape::ShapeDetails::Rect(super::shape::RectDetails::default()),
             options: super::shape::Options::default(),
         };
-        let event = Event::AddShape { data: data.clone() };
+        let event = Event::Add { data: data.clone() };
 
         let guid = model.process_event(event);
         data.guid = guid;
@@ -201,7 +203,7 @@ mod tests {
             details: super::shape::ShapeDetails::Text(super::shape::TextDetails::default()),
             options: super::shape::Options::default(),
         };
-        let event = Event::AddShape { data: data.clone() };
+        let event = Event::Add { data: data.clone() };
 
         let guid = model.process_event(event);
         data.guid = guid;
@@ -224,7 +226,7 @@ mod tests {
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
-        let event1 = Event::AddShape {
+        let event1 = Event::Add {
             data: data1.clone(),
         };
 
@@ -235,7 +237,7 @@ mod tests {
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
-        let event2 = Event::AddShape {
+        let event2 = Event::Add {
             data: data2.clone(),
         };
 
@@ -280,7 +282,7 @@ mod tests {
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
-        let event = Event::AddShape { data: data.clone() };
+        let event = Event::Add { data: data.clone() };
 
         let guid = model.process_event(event);
         data.guid = guid;

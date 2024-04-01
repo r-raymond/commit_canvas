@@ -4,11 +4,14 @@ use web_sys::MouseEvent;
 
 use crate::{
     globals::{CONTROL, SVG},
+    model::Model,
     utils::{coords_to_pixels, pixels_to_coords},
+    view::UIView,
 };
 
 use self::menu::{setup, update_main_menu, MainMenuButton};
 
+mod callback;
 mod marker;
 mod menu;
 
@@ -17,12 +20,14 @@ pub struct Control {
     mouse_pixel_coords: (f32, f32),
     mouse_coords: (i32, i32),
     marker: Option<marker::Marker>,
+    model: Model,
 }
 
 impl Control {
     pub fn new() -> Control {
         log::info!("starting contol setup");
         setup().expect("failed to setup menu");
+        callback::setup().expect("failed to setup callbacks");
         let button_state = MainMenuButton::default();
         update_main_menu(button_state).expect("failed to update main menu");
 
@@ -35,11 +40,15 @@ impl Control {
         SVG.with(|s| s.set_onmousemove(Some(mouse_update_closure.as_ref().unchecked_ref())));
         mouse_update_closure.forget();
 
+        let mut model = Model::new();
+        model.add_view(Box::new(UIView::new()));
+
         Control {
             button_state: MainMenuButton::default(),
             mouse_pixel_coords: (0., 0.),
             mouse_coords: (0, 0),
             marker: None,
+            model,
         }
     }
 
@@ -75,5 +84,15 @@ impl Control {
                     .expect("failed to update marker");
             }
         }
+    }
+
+    pub fn undo(&mut self) {
+        log::info!("undo");
+        self.model.undo();
+    }
+
+    pub fn redo(&mut self) {
+        log::info!("redo");
+        self.model.redo();
     }
 }
