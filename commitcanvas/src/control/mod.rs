@@ -89,10 +89,7 @@ impl Control {
                         data: ShapeUpdate {
                             guid,
                             start: None,
-                            end: Some(crate::types::Point {
-                                x: x as f32,
-                                y: y as f32,
-                            }),
+                            end: Some(crate::types::Point { x, y }),
                             details: None,
                             options: None,
                         },
@@ -113,14 +110,8 @@ impl Control {
                 let event = Event::Add {
                     data: ShapeCreate {
                         guid: None,
-                        start: crate::types::Point {
-                            x: x as f32,
-                            y: y as f32,
-                        },
-                        end: crate::types::Point {
-                            x: x as f32,
-                            y: y as f32,
-                        },
+                        start: crate::types::Point { x, y },
+                        end: crate::types::Point { x, y },
                         details: ShapeDetails::Arrow(ArrowDetails::default()),
                         options: Options::default(),
                     },
