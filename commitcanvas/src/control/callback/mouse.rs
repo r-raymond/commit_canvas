@@ -14,10 +14,10 @@ pub fn setup() -> Result<(), JsValue> {
     mouse_update_closure.forget();
 
     let mouse_down_closure =
-        Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |_: web_sys::MouseEvent| {
+        Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
             CONTROL.with(|c| {
                 let mut control = c.borrow_mut();
-                control.mouse_down();
+                control.mouse_down(event.button());
             });
         });
     SVG.with(|s| s.set_onmousedown(Some(mouse_down_closure.as_ref().unchecked_ref())));

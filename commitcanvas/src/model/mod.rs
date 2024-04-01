@@ -113,7 +113,6 @@ impl Model {
         }
     }
 
-    #[allow(dead_code)]
     pub fn get_shape(&self, guid: Guid) -> Option<&shape::Shape> {
         self.shapes.get(&guid)
     }

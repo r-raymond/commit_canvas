@@ -1,4 +1,5 @@
 use crate::{
+    control::selection::Selection,
     model::{
         ArrowDetails, Event, Guid, Model, Options, RectDetails, ShapeCreate, ShapeDetails,
         ShapeUpdate,
@@ -59,6 +60,7 @@ impl Control {
     pub fn set_button_state(&mut self, state: MainMenuButton) {
         log::info!("setting button state to {:?}", state);
         self.button_state = state;
+        self.selection = None;
         update_main_menu(state).expect("failed to update main menu");
         match state {
             MainMenuButton::Arrow => {
@@ -105,8 +107,14 @@ impl Control {
         }
     }
 
-    pub fn mouse_down(&mut self) {
-        log::info!("mouse down");
+    pub fn mouse_down(&mut self, button: i16) {
+        log::debug!("mouse down");
+        if button == 2 {
+            // TODO: cancel shape creation or modification
+            self.state = State::Normal;
+            self.set_button_state(MainMenuButton::default());
+            return;
+        }
         match self.button_state {
             MainMenuButton::Arrow => {
                 self.marker = None;
@@ -145,7 +153,7 @@ impl Control {
     }
 
     pub fn mouse_up(&mut self) {
-        log::info!("mouse up");
+        log::debug!("mouse up");
         if let State::Modifying { .. } = self.state {
             self.state = State::Normal;
             self.set_button_state(MainMenuButton::default());
@@ -154,7 +162,12 @@ impl Control {
 
     pub fn select(&mut self, guid: Guid) {
         log::info!("selecting shape: {:?}", guid);
-        self.state = State::Modifying { guid };
+        self.state = State::Normal;
+        let shape = self
+            .model
+            .get_shape(guid)
+            .expect(format!("failed to get shape {:?}", guid).as_str());
+        self.selection = Some(Selection::new(shape.clone()).expect("failed to create selection"));
     }
 
     pub fn undo(&mut self) {
