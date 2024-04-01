@@ -12,6 +12,7 @@ use self::menu::{setup, update_main_menu, MainMenuButton};
 mod callback;
 mod marker;
 mod menu;
+mod selection;
 
 #[derive(Debug, Default)]
 enum State {
@@ -27,6 +28,8 @@ pub struct Control {
     mouse_pixel_coords: (f32, f32),
     mouse_coords: (i32, i32),
     marker: Option<marker::Marker>,
+    #[allow(dead_code)]
+    selection: Option<selection::Selection>,
     model: Model,
     state: State,
 }
@@ -47,6 +50,7 @@ impl Control {
             mouse_pixel_coords: (0., 0.),
             mouse_coords: (0, 0),
             marker: None,
+            selection: None,
             model,
             state: State::default(),
         }
@@ -146,6 +150,11 @@ impl Control {
             self.state = State::Normal;
             self.set_button_state(MainMenuButton::default());
         }
+    }
+
+    pub fn select(&mut self, guid: Guid) {
+        log::info!("selecting shape: {:?}", guid);
+        self.state = State::Modifying { guid };
     }
 
     pub fn undo(&mut self) {

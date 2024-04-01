@@ -21,16 +21,17 @@ pub struct UIView {
 #[derive(Debug)]
 pub enum Item {
     Arrow {
-        path: web_sys::Element,
+        group: web_sys::SvgElement,
+        path: web_sys::SvgPathElement,
+        selector: web_sys::SvgPathElement,
+        selector_closure: wasm_bindgen::closure::Closure<dyn Fn(web_sys::MouseEvent)>,
     },
     Rect {
         path: web_sys::Element,
         rect: web_sys::Element,
     },
     #[allow(dead_code)]
-    Text {
-        text: web_sys::Element,
-    },
+    Text { text: web_sys::Element },
 }
 
 impl UIView {
@@ -44,8 +45,8 @@ impl UIView {
 impl Drop for Item {
     fn drop(&mut self) {
         match self {
-            Item::Arrow { path } => {
-                path.remove();
+            Item::Arrow { group, .. } => {
+                group.remove();
             }
             Item::Rect { path, rect } => {
                 path.remove();

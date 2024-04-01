@@ -26,6 +26,10 @@
 .cc_app {
 }
 
+.cc_selector {
+    @apply stroke-transparent fill-transparent cursor-pointer stroke-[1em];
+}
+
 .cc_menu_top {
     @apply absolute top-0 inset-x-1/2 inline-flex translate-x-[-4rem] translate-y-8;
 }
@@ -47,15 +51,15 @@
 }
 
 .cc_arrow {
-    @apply stroke-stone-800 fill-transparent cursor-pointer;
+    @apply stroke-stone-800 fill-transparent;
 }
 
 .cc_rect {
-    @apply stroke-stone-800 fill-transparent cursor-pointer;
+    @apply stroke-stone-800 fill-transparent;
 }
 
 .cc_rect_fill {
-    @apply fill-none stroke-none cursor-pointer;
+    @apply fill-none stroke-none;
 }
 
 .cc_nav_button {
