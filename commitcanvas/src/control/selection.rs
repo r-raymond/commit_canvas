@@ -126,13 +126,13 @@ impl Drop for Nodes {
 
 pub struct Selection {
     pub selected: Guid,
-    pub rect: Option<web_sys::SvgElement>,
+    pub path: Option<web_sys::SvgElement>,
     pub nodes: Nodes,
 }
 
 impl Drop for Selection {
     fn drop(&mut self) {
-        if let Some(rect) = &self.rect {
+        if let Some(rect) = &self.path {
             rect.remove();
         }
     }
@@ -140,28 +140,44 @@ impl Drop for Selection {
 
 impl Selection {
     pub fn new(shape: Shape) -> Result<Self, JsValue> {
-        let rect =
-            DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "rect"))?;
-        rect.set_id("cc_selection_rect");
-        rect.set_attribute("class", "cc_selection_rect")?;
-        rect.set_attribute("x", (shape.start.x.min(shape.end.x)).to_string().as_str())?;
-        rect.set_attribute("y", (shape.start.y.min(shape.end.y)).to_string().as_str())?;
-        rect.set_attribute(
-            "width",
-            (shape.end.x - shape.start.x).abs().to_string().as_str(),
-        )?;
-        rect.set_attribute(
-            "height",
-            (shape.end.y - shape.start.y).abs().to_string().as_str(),
-        )?;
-        rect.set_attribute("rx", "5")?;
+        let path =
+            DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "path"))?;
+        path.set_id("cc_selection_rect");
+        path.set_attribute("class", "cc_selection_rect")?;
+        const EXTRA: f32 = 4096.0;
 
-        SVG_CONTROL_GROUP.with(|g| g.append_child(&rect))?;
+        let min_x = shape.start.x.min(shape.end.x);
+        let min_y = shape.start.y.min(shape.end.y);
+        let max_x = shape.start.x.max(shape.end.x);
+        let max_y = shape.start.y.max(shape.end.y);
+
+        let d = format!(
+            "M {} {} L {} {} M {} {} L {} {} M {} {} L {} {} M {} {} L {} {}",
+            min_x - EXTRA,
+            min_y,
+            max_x + EXTRA,
+            min_y,
+            min_x,
+            min_y - EXTRA,
+            min_x,
+            max_y + EXTRA,
+            max_x,
+            min_y - EXTRA,
+            max_x,
+            max_y + EXTRA,
+            min_x - EXTRA,
+            max_y,
+            max_x + EXTRA,
+            max_y,
+        );
+        path.set_attribute("d", &d)?;
+
+        SVG_CONTROL_GROUP.with(|g| g.append_child(&path))?;
         let nodes = Nodes::new(&shape)?;
 
         Ok(Self {
             selected: shape.guid,
-            rect: Some(rect.dyn_into::<web_sys::SvgElement>()?),
+            path: Some(path.dyn_into::<web_sys::SvgElement>()?),
             nodes,
         })
     }
