@@ -27,8 +27,11 @@ pub enum Item {
         selector_closure: wasm_bindgen::closure::Closure<dyn Fn(web_sys::MouseEvent)>,
     },
     Rect {
-        path: web_sys::Element,
-        rect: web_sys::Element,
+        group: web_sys::SvgElement,
+        path: web_sys::SvgElement,
+        rect: web_sys::SvgElement,
+        selector: web_sys::SvgElement,
+        selector_closure: wasm_bindgen::closure::Closure<dyn Fn(web_sys::MouseEvent)>,
     },
     #[allow(dead_code)]
     Text { text: web_sys::Element },
@@ -48,9 +51,8 @@ impl Drop for Item {
             Item::Arrow { group, .. } => {
                 group.remove();
             }
-            Item::Rect { path, rect } => {
-                path.remove();
-                rect.remove();
+            Item::Rect { group, .. } => {
+                group.remove();
             }
             Item::Text { text } => {
                 text.remove();
