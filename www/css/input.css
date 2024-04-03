@@ -46,7 +46,7 @@
     @apply stroke-stone-400 fill-transparent;
 }
 
-.cc_arrow_select_node {
+.cc_selection_node {
     @apply fill-primary cursor-pointer;
 }
 
