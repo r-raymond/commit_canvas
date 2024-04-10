@@ -173,10 +173,7 @@ impl Control {
     pub fn select(&mut self, guid: Guid) {
         log::info!("selecting shape: {:?}", guid);
         self.state = State::Normal;
-        let shape = self
-            .model
-            .get_shape(guid)
-            .expect(format!("failed to get shape {:?}", guid).as_str());
+        let shape = self.model.get_shape(guid).expect("failed to get shape");
         self.selection = Some(Selection::new(shape).expect("failed to create selection"));
     }
 

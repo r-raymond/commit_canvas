@@ -177,7 +177,7 @@ impl Selection {
         path.set_attribute("class", "cc_selection_rect")?;
 
         SVG_CONTROL_GROUP.with(|g| g.append_child(&path))?;
-        let nodes = Nodes::new(&shape)?;
+        let nodes = Nodes::new(shape)?;
 
         let mut result = Self {
             selected: shape.guid,
