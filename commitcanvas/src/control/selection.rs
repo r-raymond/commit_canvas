@@ -1,7 +1,7 @@
-use wasm_bindgen::{JsCast, JsValue};
+use wasm_bindgen::{closure::Closure, JsCast, JsValue};
 
 use crate::{
-    globals::{DOCUMENT, SVG_CONTROL_GROUP},
+    globals::{CONTROL, DOCUMENT, SVG_CONTROL_GROUP},
     model::{Guid, Shape},
 };
 
@@ -14,11 +14,14 @@ pub struct Nodes {
     pub node6: web_sys::SvgElement,
     pub node7: web_sys::SvgElement,
     pub node8: web_sys::SvgElement,
+    #[allow(dead_code)]
+    closure3: Closure<dyn Fn(web_sys::MouseEvent)>,
     // TODO add node to center
 }
 
 impl Nodes {
     pub fn new(shape: &Shape) -> Result<Self, JsValue> {
+        let guid = shape.guid;
         let node1 =
             DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?;
         node1.set_attribute("class", "cc_selection_node")?;
@@ -33,12 +36,23 @@ impl Nodes {
         node2.set_attribute("cy", shape.start.y.to_string().as_str())?;
         node2.set_attribute("r", "5")?;
 
-        let node3 =
-            DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?;
+        let node3 = DOCUMENT
+            .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
+            .dyn_into::<web_sys::SvgElement>()?;
         node3.set_attribute("class", "cc_selection_node")?;
         node3.set_attribute("cx", shape.end.x.to_string().as_str())?;
         node3.set_attribute("cy", shape.end.y.to_string().as_str())?;
         node3.set_attribute("r", "5")?;
+        let closure3 =
+            Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
+                event.prevent_default();
+                event.stop_propagation();
+                CONTROL.with(|control| {
+                    let mut c = control.borrow_mut();
+                    c.modify(guid);
+                });
+            });
+        node3.set_onmousedown(Some(closure3.as_ref().unchecked_ref()));
 
         let node4 =
             DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?;
@@ -101,7 +115,8 @@ impl Nodes {
         Ok(Self {
             node1: node1.dyn_into::<web_sys::SvgElement>()?,
             node2: node2.dyn_into::<web_sys::SvgElement>()?,
-            node3: node3.dyn_into::<web_sys::SvgElement>()?,
+            node3,
+            closure3,
             node4: node4.dyn_into::<web_sys::SvgElement>()?,
             node5: node5.dyn_into::<web_sys::SvgElement>()?,
             node6: node6.dyn_into::<web_sys::SvgElement>()?,

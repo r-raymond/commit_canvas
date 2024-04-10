@@ -22,6 +22,9 @@ enum State {
     Modifying {
         guid: Guid,
     },
+    ButtonState {
+        button: MainMenuButton,
+    },
 }
 
 pub struct Control {
@@ -158,6 +161,11 @@ impl Control {
             self.state = State::Normal;
             self.set_button_state(MainMenuButton::default());
         }
+    }
+
+    pub fn modify(&mut self, guid: Guid) {
+        log::info!("modifying shape: {:?}", guid);
+        self.state = State::Modifying { guid };
     }
 
     pub fn select(&mut self, guid: Guid) {
