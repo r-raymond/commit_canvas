@@ -22,9 +22,6 @@ enum State {
     Modifying {
         guid: Guid,
     },
-    ButtonState {
-        button: MainMenuButton,
-    },
 }
 
 pub struct Control {
