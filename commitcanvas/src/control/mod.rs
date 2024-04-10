@@ -103,6 +103,11 @@ impl Control {
                     },
                 };
                 self.model.process_event(event);
+                if let Some(selection) = &mut self.selection {
+                    selection
+                        .update(self.model.get_shape(guid).expect("failed to get shape"))
+                        .expect("failed to update selection");
+                }
             }
         }
     }
@@ -172,7 +177,7 @@ impl Control {
             .model
             .get_shape(guid)
             .expect(format!("failed to get shape {:?}", guid).as_str());
-        self.selection = Some(Selection::new(shape.clone()).expect("failed to create selection"));
+        self.selection = Some(Selection::new(shape).expect("failed to create selection"));
     }
 
     pub fn undo(&mut self) {

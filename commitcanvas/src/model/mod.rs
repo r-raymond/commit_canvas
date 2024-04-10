@@ -64,7 +64,7 @@ impl Model {
                     .map(|shape| EventHistory::Remove { shape })
             }
             Event::Modify { guid, data } => {
-                log::info!("modifying shape: {guid}");
+                log::debug!("modifying shape: {guid}");
                 self.shapes.get_mut(&guid).map(|shape| {
                     let old_shape = shape.clone();
                     shape.update(data);
