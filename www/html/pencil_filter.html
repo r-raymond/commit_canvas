@@ -1,10 +1,78 @@
-<feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="5" stitchTiles="stitch" result="f1">
-</feTurbulence>
-<feColorMatrix type="matrix" values="0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 -1.5 1.5" result="f2">
-</feColorMatrix>
-<feComposite operator="in" in2="f2b" in="SourceGraphic" result="f3">
-</feComposite>
-<feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="3" result="noise">
-</feTurbulence>
-<feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="2.5" in="f3" result="f4">
-</feDisplacementMap>
+<feTurbulence
+        id="feTurbulence4537-0-8-6-4-8-5-0-3-0-7-7-6-5-5-4-0"
+        baseFrequency="0.88400000000000001"
+        numOctaves="5" />
+<feColorMatrix
+        id="feColorMatrix4539-3-7-1-7-9-6-4-3-5-0-9-5-9-2-5-8"
+        values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1.9 0 "
+        result="result1" />
+<feMorphology
+        id="feMorphology5746-2-0-1-0-9-0-3-2-2-3-2-9"
+        radius="0.5"
+        in="SourceGraphic"
+        result="result10"
+        operator="dilate" />
+<feComposite
+        id="feComposite4541-6-9-9-2-5-6-3-6-1-7-0-3-9-6-8-3"
+        in2="result1"
+        operator="in"
+        result="result2"
+        in="result10" />
+<feDisplacementMap
+        yChannelSelector="A"
+        id="feDisplacementMap4543-8-8-5-3-9-5-4-8-5-4-7-4-5-4-7-9"
+        in2="result1"
+        xChannelSelector="R"
+        scale="0.7"
+        in="result2"
+        result="result3" />
+<feDisplacementMap
+        id="feDisplacementMap4545-7-0-3-2-3-8-4-7-1-7-1-7-9-2-1-0"
+        in2="result1"
+        in="result2"
+        xChannelSelector="R"
+        scale="1.5"
+        result="result4"
+        yChannelSelector="A" />
+<feDisplacementMap
+        yChannelSelector="A"
+        id="feDisplacementMap4547-8-5-4-6-1-1-4-6-3-6-0-1-9-6-7-1"
+        in2="result1"
+        in="result2"
+        xChannelSelector="R"
+        scale="1.078167115902965"
+        result="result5"
+        dy="-0.29999999999999999" />
+<feOffset
+        dx="-0.79999999999999716"
+        dy="-0.5"
+        id="feOffset4553-7-1-3-7-3-5-9-5-6-2-4-3-5-1-1-9"
+        result="result6"
+        scale="1.1000000000000001" />
+<feOffset
+        dx="-1.1000000000000001"
+        dy="-0.69999999999999996"
+        id="feOffset4557-3-3-1-5-9-7-3-6-9-8-6-8-0-7-7-5"
+        in="result4"
+        result="result9" />
+<feOffset
+        dx="0"
+        dy="-0.40000000000000002"
+        id="feOffset4559-9-7-1-1-2-7-7-1-0-7-1-7-9-2-1-2"
+        in="result3"
+        result="result7" />
+<feBlend
+        mode="darken"
+        id="feBlend4561-9-4-2-7-5-5-5-0-4-4-9-9-5-9-3-0"
+        in2="result9"
+        in="result6"
+        result="result8" />
+<feBlend
+        mode="normal"
+        id="feBlend4563-2-9-95-0-0-6-0-8-0-1-0-8-4-1-7-1"
+        in2="result7" />
+<feOffset
+        dx="0"
+        dy="0.5"
+        id="feOffset5898" />
+
