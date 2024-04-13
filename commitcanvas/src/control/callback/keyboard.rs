@@ -22,6 +22,28 @@ pub fn setup() -> Result<(), JsValue> {
                     control.redo();
                 });
             }
+
+            if key == "x" && event.ctrl_key() {
+                CONTROL.with(|c| {
+                    let mut control = c.borrow_mut();
+                    control.cut();
+                });
+            }
+
+            if key == "c" && event.ctrl_key() {
+                CONTROL.with(|c| {
+                    let mut control = c.borrow_mut();
+                    control.copy();
+                });
+            }
+
+            if key == "v" && event.ctrl_key() {
+                CONTROL.with(|c| {
+                    let mut control = c.borrow_mut();
+                    control.paste();
+                });
+            }
+
             Ok(())
         },
     );

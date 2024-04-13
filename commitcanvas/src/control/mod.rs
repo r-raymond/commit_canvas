@@ -1,7 +1,7 @@
 use crate::{
     control::selection::Selection,
     model::{
-        ArrowDetails, Event, Guid, Model, Options, RectDetails, ShapeCreate, ShapeDetails,
+        ArrowDetails, Event, Guid, Model, Options, RectDetails, Shape, ShapeCreate, ShapeDetails,
         ShapeUpdate,
     },
     utils::{coords_to_pixels, pixels_to_coords},
@@ -31,6 +31,9 @@ pub enum ModificationType {
 enum State {
     #[default]
     Normal,
+    Selected {
+        guid: Guid,
+    },
     Modifying {
         guid: Guid,
         modification_type: ModificationType,
@@ -46,6 +49,7 @@ pub struct Control {
     selection: Option<selection::Selection>,
     model: Model,
     state: State,
+    copied_shape: Option<Shape>,
 }
 
 impl Control {
@@ -67,6 +71,7 @@ impl Control {
             selection: None,
             model,
             state: State::default(),
+            copied_shape: None,
         }
     }
 
@@ -283,7 +288,7 @@ impl Control {
 
     pub fn select(&mut self, guid: Guid) {
         log::info!("selecting shape: {:?}", guid);
-        self.state = State::Normal;
+        self.state = State::Selected { guid };
         let shape = self.model.get_shape(guid).expect("failed to get shape");
         self.selection = Some(Selection::new(shape).expect("failed to create selection"));
     }
@@ -296,5 +301,45 @@ impl Control {
     pub fn redo(&mut self) {
         log::info!("redo");
         self.model.redo();
+    }
+
+    pub fn cut(&mut self) {
+        log::info!("cut");
+        if let State::Selected { guid } = self.state {
+            let shape = self.model.get_shape(guid).expect("failed to get shape");
+            self.copied_shape = Some(shape.clone());
+            self.model.process_event(Event::Remove { guid });
+        }
+        if self.selection.is_some() {
+            self.selection = None;
+        }
+    }
+
+    pub fn copy(&mut self) {
+        log::info!("copy");
+        if let State::Selected { guid } = self.state {
+            let shape = self.model.get_shape(guid).expect("failed to get shape");
+            self.copied_shape = Some(shape.clone());
+        }
+    }
+
+    pub fn paste(&mut self) {
+        log::info!("paste");
+        if let Some(shape) = &self.copied_shape {
+            let (x, y) = coords_to_pixels(self.mouse_coords);
+            let event = Event::Add {
+                data: ShapeCreate {
+                    guid: None,
+                    start: crate::types::Point { x, y },
+                    end: crate::types::Point {
+                        x: x + shape.end.x - shape.start.x,
+                        y: y + shape.end.y - shape.start.y,
+                    },
+                    details: shape.details.clone(),
+                    options: shape.options.clone(),
+                },
+            };
+            self.model.process_event(event);
+        }
     }
 }
