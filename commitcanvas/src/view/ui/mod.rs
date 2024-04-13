@@ -18,28 +18,41 @@ pub struct UIView {
     pub items: HashMap<Guid, Item>,
 }
 
+#[derive(Debug)]
 pub enum Item {
     Arrow {
-        path: web_sys::Element,
+        group: web_sys::SvgElement,
+        path: web_sys::SvgPathElement,
+        selector: web_sys::SvgPathElement,
+        selector_closure: wasm_bindgen::closure::Closure<dyn Fn(web_sys::MouseEvent)>,
     },
     Rect {
-        path: web_sys::Element,
-        rect: web_sys::Element,
+        group: web_sys::SvgElement,
+        path: web_sys::SvgElement,
+        rect: web_sys::SvgElement,
+        selector: web_sys::SvgElement,
+        selector_closure: wasm_bindgen::closure::Closure<dyn Fn(web_sys::MouseEvent)>,
     },
-    Text {
-        text: web_sys::Element,
-    },
+    #[allow(dead_code)]
+    Text { text: web_sys::Element },
+}
+
+impl UIView {
+    pub fn new() -> Self {
+        Self {
+            items: HashMap::new(),
+        }
+    }
 }
 
 impl Drop for Item {
     fn drop(&mut self) {
         match self {
-            Item::Arrow { path } => {
-                path.remove();
+            Item::Arrow { group, .. } => {
+                group.remove();
             }
-            Item::Rect { path, rect } => {
-                path.remove();
-                rect.remove();
+            Item::Rect { group, .. } => {
+                group.remove();
             }
             Item::Text { text } => {
                 text.remove();
@@ -73,7 +86,7 @@ impl View for UIView {
             }
             super::event::Event::Modify { event } => {
                 match event {
-                    EventHistory::AddShape { shape } => {
+                    EventHistory::Add { shape } => {
                         match shape.details {
                             ShapeDetails::Arrow(_) => {
                                 log::info!("rendering arrow: {:?}", shape.guid);
@@ -82,7 +95,7 @@ impl View for UIView {
                             }
                             ShapeDetails::Rect(_) => {
                                 log::info!("rendering rect: {:?}", shape.guid);
-                                let item = create_arrow(&shape)?;
+                                let item = create_rect(&shape)?;
                                 self.items.insert(shape.guid, item);
                             }
                             ShapeDetails::Text(_) => {
@@ -90,14 +103,14 @@ impl View for UIView {
                             }
                         }
                     }
-                    EventHistory::RemoveShape { shape } => {
+                    EventHistory::Remove { shape } => {
                         if self.items.remove(&shape.guid).is_some() {
                             log::info!("removing shape: {:?}", shape.guid);
                         } else {
                             log::warn!("deleting nonexistent shape: {:?}", shape.guid);
                         }
                     }
-                    EventHistory::ModifyShape { to, .. } => {
+                    EventHistory::Modify { to, .. } => {
                         match to.details {
                             ShapeDetails::Arrow(_) => {
                                 if let Some(item) = self.items.get(&to.guid) {

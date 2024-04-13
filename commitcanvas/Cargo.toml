@@ -40,6 +40,7 @@ features = [
   'SvgForeignObjectElement',
   'SvgGraphicsElement',
   'SvgMarkerElement',
+  'SvgPathElement',
   'SvgRect',
   'Touch',
   'TouchEvent',
