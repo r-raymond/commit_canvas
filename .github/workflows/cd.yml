@@ -50,6 +50,11 @@ jobs:
           mkdir -p ./dist/js
           cp ./js/* ./dist/js/
         working-directory: ./www
+      - name: Copy Html
+        run: |
+          mkdir -p ./dist/html
+          cp ./html/* ./dist/html/
+        working-directory: ./www
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
