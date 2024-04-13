@@ -45,6 +45,11 @@ jobs:
           mkdir -p ./dist/css
           cp ./css/output.css ./dist/css/output.css
         working-directory: ./www
+      - name: Copy JS
+        run: |
+          mkdir -p ./dist/js
+          cp ./js/* ./dist/js/
+        working-directory: ./www
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
