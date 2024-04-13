@@ -15,12 +15,25 @@ mod marker;
 mod menu;
 mod selection;
 
+#[derive(Debug, Clone, Copy)]
+pub enum ModificationType {
+    TL,
+    TR,
+    BL,
+    BR,
+    T,
+    R,
+    B,
+    L,
+}
+
 #[derive(Debug, Default)]
 enum State {
     #[default]
     Normal,
     Modifying {
         guid: Guid,
+        modification_type: ModificationType,
     },
 }
 
@@ -90,16 +103,105 @@ impl Control {
                     .expect("failed to update marker");
             }
 
-            if let State::Modifying { guid } = self.state {
+            if let State::Modifying {
+                guid,
+                modification_type,
+            } = self.state
+            {
+                let shape = self.model.get_shape(guid).expect("failed to get shape");
                 let (x, y) = coords_to_pixels(self.mouse_coords);
-                let event = Event::Modify {
-                    guid,
-                    data: ShapeUpdate {
+                let event = match modification_type {
+                    ModificationType::TL => Event::Modify {
                         guid,
-                        start: None,
-                        end: Some(crate::types::Point { x, y }),
-                        details: None,
-                        options: None,
+                        data: ShapeUpdate {
+                            guid,
+                            start: Some(crate::types::Point { x, y }),
+                            end: None,
+                            details: None,
+                            options: None,
+                        },
+                    },
+                    ModificationType::TR => Event::Modify {
+                        guid,
+                        data: ShapeUpdate {
+                            guid,
+                            start: Some(crate::types::Point {
+                                x: shape.start.x,
+                                y,
+                            }),
+                            end: Some(crate::types::Point { x, y: shape.end.y }),
+                            details: None,
+                            options: None,
+                        },
+                    },
+                    ModificationType::BR => Event::Modify {
+                        guid,
+                        data: ShapeUpdate {
+                            guid,
+                            start: None,
+                            end: Some(crate::types::Point { x, y }),
+                            details: None,
+                            options: None,
+                        },
+                    },
+                    ModificationType::BL => Event::Modify {
+                        guid,
+                        data: ShapeUpdate {
+                            guid,
+                            start: Some(crate::types::Point {
+                                x,
+                                y: shape.start.y,
+                            }),
+                            end: Some(crate::types::Point { x: shape.end.x, y }),
+                            details: None,
+                            options: None,
+                        },
+                    },
+                    ModificationType::T => Event::Modify {
+                        guid,
+                        data: ShapeUpdate {
+                            guid,
+                            start: Some(crate::types::Point {
+                                x: shape.start.x,
+                                y,
+                            }),
+                            end: None,
+                            details: None,
+                            options: None,
+                        },
+                    },
+                    ModificationType::R => Event::Modify {
+                        guid,
+                        data: ShapeUpdate {
+                            guid,
+                            start: None,
+                            end: Some(crate::types::Point { x, y: shape.end.y }),
+                            details: None,
+                            options: None,
+                        },
+                    },
+                    ModificationType::B => Event::Modify {
+                        guid,
+                        data: ShapeUpdate {
+                            guid,
+                            start: None,
+                            end: Some(crate::types::Point { x: shape.end.x, y }),
+                            details: None,
+                            options: None,
+                        },
+                    },
+                    ModificationType::L => Event::Modify {
+                        guid,
+                        data: ShapeUpdate {
+                            guid,
+                            start: Some(crate::types::Point {
+                                x,
+                                y: shape.start.y,
+                            }),
+                            end: None,
+                            details: None,
+                            options: None,
+                        },
                     },
                 };
                 self.model.process_event(event);
@@ -134,7 +236,10 @@ impl Control {
                     },
                 };
                 if let Some(guid) = self.model.process_event(event) {
-                    self.state = State::Modifying { guid };
+                    self.state = State::Modifying {
+                        guid,
+                        modification_type: ModificationType::BR,
+                    };
                 }
             }
             MainMenuButton::Rect => {
@@ -150,7 +255,10 @@ impl Control {
                     },
                 };
                 if let Some(guid) = self.model.process_event(event) {
-                    self.state = State::Modifying { guid };
+                    self.state = State::Modifying {
+                        guid,
+                        modification_type: ModificationType::BR,
+                    };
                 }
             }
             _ => {}
@@ -165,9 +273,12 @@ impl Control {
         }
     }
 
-    pub fn modify(&mut self, guid: Guid) {
-        log::info!("modifying shape: {:?}", guid);
-        self.state = State::Modifying { guid };
+    pub fn modify(&mut self, guid: Guid, modification_type: ModificationType) {
+        log::info!("modifying shape: {:?} {:?}", guid, modification_type);
+        self.state = State::Modifying {
+            guid,
+            modification_type,
+        };
     }
 
     pub fn select(&mut self, guid: Guid) {

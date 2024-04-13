@@ -15,22 +15,58 @@ pub struct Nodes {
     pub node7: web_sys::SvgElement,
     pub node8: web_sys::SvgElement,
     #[allow(dead_code)]
+    closure1: Closure<dyn Fn(web_sys::MouseEvent)>,
+    #[allow(dead_code)]
+    closure2: Closure<dyn Fn(web_sys::MouseEvent)>,
+    #[allow(dead_code)]
     closure3: Closure<dyn Fn(web_sys::MouseEvent)>,
+    #[allow(dead_code)]
+    closure4: Closure<dyn Fn(web_sys::MouseEvent)>,
+    #[allow(dead_code)]
+    closure5: Closure<dyn Fn(web_sys::MouseEvent)>,
+    #[allow(dead_code)]
+    closure6: Closure<dyn Fn(web_sys::MouseEvent)>,
+    #[allow(dead_code)]
+    closure7: Closure<dyn Fn(web_sys::MouseEvent)>,
+    #[allow(dead_code)]
+    closure8: Closure<dyn Fn(web_sys::MouseEvent)>,
     // TODO add node to center
 }
 
 impl Nodes {
     pub fn new(shape: &Shape) -> Result<Self, JsValue> {
         let guid = shape.guid;
-        let node1 =
-            DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?;
+        let node1 = DOCUMENT
+            .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
+            .dyn_into::<web_sys::SvgElement>()?;
         node1.set_attribute("class", "cc_selection_node")?;
         node1.set_attribute("r", "5")?;
+        let closure1 =
+            Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
+                event.prevent_default();
+                event.stop_propagation();
+                CONTROL.with(|control| {
+                    let mut c = control.borrow_mut();
+                    c.modify(guid, super::ModificationType::TL);
+                });
+            });
+        node1.set_onmousedown(Some(closure1.as_ref().unchecked_ref()));
 
-        let node2 =
-            DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?;
+        let node2 = DOCUMENT
+            .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
+            .dyn_into::<web_sys::SvgElement>()?;
         node2.set_attribute("class", "cc_selection_node")?;
         node2.set_attribute("r", "5")?;
+        let closure2 =
+            Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
+                event.prevent_default();
+                event.stop_propagation();
+                CONTROL.with(|control| {
+                    let mut c = control.borrow_mut();
+                    c.modify(guid, super::ModificationType::TR);
+                });
+            });
+        node2.set_onmousedown(Some(closure2.as_ref().unchecked_ref()));
 
         let node3 = DOCUMENT
             .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
@@ -43,35 +79,90 @@ impl Nodes {
                 event.stop_propagation();
                 CONTROL.with(|control| {
                     let mut c = control.borrow_mut();
-                    c.modify(guid);
+                    c.modify(guid, super::ModificationType::BR);
                 });
             });
         node3.set_onmousedown(Some(closure3.as_ref().unchecked_ref()));
 
-        let node4 =
-            DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?;
+        let node4 = DOCUMENT
+            .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
+            .dyn_into::<web_sys::SvgElement>()?;
         node4.set_attribute("class", "cc_selection_node")?;
         node4.set_attribute("r", "5")?;
+        let closure4 =
+            Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
+                event.prevent_default();
+                event.stop_propagation();
+                CONTROL.with(|control| {
+                    let mut c = control.borrow_mut();
+                    c.modify(guid, super::ModificationType::BL);
+                });
+            });
+        node4.set_onmousedown(Some(closure4.as_ref().unchecked_ref()));
 
-        let node5 =
-            DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?;
+        let node5 = DOCUMENT
+            .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
+            .dyn_into::<web_sys::SvgElement>()?;
         node5.set_attribute("class", "cc_selection_node")?;
         node5.set_attribute("r", "5")?;
+        let closure5 =
+            Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
+                event.prevent_default();
+                event.stop_propagation();
+                CONTROL.with(|control| {
+                    let mut c = control.borrow_mut();
+                    c.modify(guid, super::ModificationType::T);
+                });
+            });
+        node5.set_onmousedown(Some(closure5.as_ref().unchecked_ref()));
 
-        let node6 =
-            DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?;
+        let node6 = DOCUMENT
+            .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
+            .dyn_into::<web_sys::SvgElement>()?;
         node6.set_attribute("class", "cc_selection_node")?;
         node6.set_attribute("r", "5")?;
+        let closure6 =
+            Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
+                event.prevent_default();
+                event.stop_propagation();
+                CONTROL.with(|control| {
+                    let mut c = control.borrow_mut();
+                    c.modify(guid, super::ModificationType::R);
+                });
+            });
+        node6.set_onmousedown(Some(closure6.as_ref().unchecked_ref()));
 
-        let node7 =
-            DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?;
+        let node7 = DOCUMENT
+            .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
+            .dyn_into::<web_sys::SvgElement>()?;
         node7.set_attribute("class", "cc_selection_node")?;
         node7.set_attribute("r", "5")?;
+        let closure7 =
+            Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
+                event.prevent_default();
+                event.stop_propagation();
+                CONTROL.with(|control| {
+                    let mut c = control.borrow_mut();
+                    c.modify(guid, super::ModificationType::B);
+                });
+            });
+        node7.set_onmousedown(Some(closure7.as_ref().unchecked_ref()));
 
-        let node8 =
-            DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?;
+        let node8 = DOCUMENT
+            .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
+            .dyn_into::<web_sys::SvgElement>()?;
         node8.set_attribute("class", "cc_selection_node")?;
         node8.set_attribute("r", "5")?;
+        let closure8 =
+            Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
+                event.prevent_default();
+                event.stop_propagation();
+                CONTROL.with(|control| {
+                    let mut c = control.borrow_mut();
+                    c.modify(guid, super::ModificationType::L);
+                });
+            });
+        node8.set_onmousedown(Some(closure8.as_ref().unchecked_ref()));
 
         SVG_CONTROL_GROUP.with(|g| {
             g.append_child(&node1)?;
@@ -85,15 +176,22 @@ impl Nodes {
         })?;
 
         let mut result = Self {
-            node1: node1.dyn_into::<web_sys::SvgElement>()?,
-            node2: node2.dyn_into::<web_sys::SvgElement>()?,
+            node1,
+            node2,
             node3,
+            node4,
+            node5,
+            node6,
+            node7,
+            node8,
+            closure1,
+            closure2,
             closure3,
-            node4: node4.dyn_into::<web_sys::SvgElement>()?,
-            node5: node5.dyn_into::<web_sys::SvgElement>()?,
-            node6: node6.dyn_into::<web_sys::SvgElement>()?,
-            node7: node7.dyn_into::<web_sys::SvgElement>()?,
-            node8: node8.dyn_into::<web_sys::SvgElement>()?,
+            closure4,
+            closure5,
+            closure6,
+            closure7,
+            closure8,
         };
         result.update(shape)?;
         Ok(result)
