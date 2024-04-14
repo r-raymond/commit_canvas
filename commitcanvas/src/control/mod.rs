@@ -339,7 +339,12 @@ impl Control {
                     options: shape.options.clone(),
                 },
             };
-            self.model.process_event(event);
+            let guid = self
+                .model
+                .process_event(event)
+                .expect("failed to process event");
+            let new_shape = self.model.get_shape(guid).expect("failed to get shape");
+            self.selection = Some(Selection::new(new_shape).expect("failed to create selection"));
         }
     }
 }
