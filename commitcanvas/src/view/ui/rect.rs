@@ -8,38 +8,26 @@ use wasm_bindgen::{closure::Closure, JsCast, JsValue};
 
 use super::Item;
 
+fn render_path(start: (f32, f32), end: (f32, f32), roughness: f32, rounding: f32) -> String {
+    let rounding = rounding
+        .min(0.3 * (end.0 - start.0))
+        .min(0.3 * (end.1 - start.1));
+    format!(
+        "{} {} {} {}",
+        to_svg_path(start, (end.0, start.1), roughness, 2, 1.0,),
+        to_svg_path((end.0, start.1), end, roughness, 2, 1.0,),
+        to_svg_path(end, (start.0, end.1), roughness, 2, 1.0,),
+        to_svg_path((start.0, end.1), start, roughness, 2, 1.0,),
+    )
+}
+
 pub fn create_rect(shape: &Shape) -> Result<Item, JsValue> {
     if let ShapeDetails::Rect(d) = &shape.details {
-        let svg_path = format!(
-            "{} {} {} {}",
-            to_svg_path(
-                shape.start.into(),
-                (shape.end.x, shape.start.y),
-                (&shape.options.roughness).into(),
-                2,
-                1.0,
-            ),
-            to_svg_path(
-                (shape.end.x, shape.start.y),
-                shape.end.into(),
-                (&shape.options.roughness).into(),
-                2,
-                1.0,
-            ),
-            to_svg_path(
-                shape.end.into(),
-                (shape.start.x, shape.end.y),
-                (&shape.options.roughness).into(),
-                2,
-                1.0,
-            ),
-            to_svg_path(
-                (shape.start.x, shape.end.y),
-                shape.start.into(),
-                (&shape.options.roughness).into(),
-                2,
-                1.0,
-            ),
+        let svg_path = render_path(
+            shape.start.into(),
+            shape.end.into(),
+            (&shape.options.roughness).into(),
+            2.0,
         );
 
         let path = DOCUMENT
@@ -109,36 +97,11 @@ pub fn update_rect(shape: &Shape, item: &Item) -> Result<(), JsValue> {
     } = item
     {
         if let ShapeDetails::Rect(d) = &shape.details {
-            let svg_path = format!(
-                "{} {} {} {}",
-                to_svg_path(
-                    shape.start.into(),
-                    (shape.end.x, shape.start.y),
-                    (&shape.options.roughness).into(),
-                    2,
-                    1.0,
-                ),
-                to_svg_path(
-                    (shape.end.x, shape.start.y),
-                    shape.end.into(),
-                    (&shape.options.roughness).into(),
-                    2,
-                    1.0,
-                ),
-                to_svg_path(
-                    shape.end.into(),
-                    (shape.start.x, shape.end.y),
-                    (&shape.options.roughness).into(),
-                    2,
-                    1.0,
-                ),
-                to_svg_path(
-                    (shape.start.x, shape.end.y),
-                    shape.start.into(),
-                    (&shape.options.roughness).into(),
-                    2,
-                    1.0,
-                ),
+            let svg_path = render_path(
+                shape.start.into(),
+                shape.end.into(),
+                (&shape.options.roughness).into(),
+                2.0,
             );
             path.set_attribute("d", &svg_path)?;
             selector.set_attribute("d", &svg_path)?;
