@@ -39,7 +39,7 @@ impl Nodes {
         let node1 = DOCUMENT
             .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
             .dyn_into::<web_sys::SvgElement>()?;
-        node1.set_attribute("class", "cc_selection_node")?;
+        node1.set_attribute("class", "cc_selection_node cc_selection_node_tl")?;
         node1.set_attribute("r", "5")?;
         let closure1 =
             Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
@@ -55,7 +55,7 @@ impl Nodes {
         let node2 = DOCUMENT
             .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
             .dyn_into::<web_sys::SvgElement>()?;
-        node2.set_attribute("class", "cc_selection_node")?;
+        node2.set_attribute("class", "cc_selection_node cc_selection_node_tr")?;
         node2.set_attribute("r", "5")?;
         let closure2 =
             Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
@@ -71,7 +71,7 @@ impl Nodes {
         let node3 = DOCUMENT
             .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
             .dyn_into::<web_sys::SvgElement>()?;
-        node3.set_attribute("class", "cc_selection_node")?;
+        node3.set_attribute("class", "cc_selection_node cc_selection_node_br")?;
         node3.set_attribute("r", "5")?;
         let closure3 =
             Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
@@ -87,7 +87,7 @@ impl Nodes {
         let node4 = DOCUMENT
             .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
             .dyn_into::<web_sys::SvgElement>()?;
-        node4.set_attribute("class", "cc_selection_node")?;
+        node4.set_attribute("class", "cc_selection_node cc_selection_node_bl")?;
         node4.set_attribute("r", "5")?;
         let closure4 =
             Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
@@ -103,7 +103,7 @@ impl Nodes {
         let node5 = DOCUMENT
             .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
             .dyn_into::<web_sys::SvgElement>()?;
-        node5.set_attribute("class", "cc_selection_node")?;
+        node5.set_attribute("class", "cc_selection_node cc_selection_node_t")?;
         node5.set_attribute("r", "5")?;
         let closure5 =
             Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
@@ -119,7 +119,7 @@ impl Nodes {
         let node6 = DOCUMENT
             .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
             .dyn_into::<web_sys::SvgElement>()?;
-        node6.set_attribute("class", "cc_selection_node")?;
+        node6.set_attribute("class", "cc_selection_node cc_selection_node_r")?;
         node6.set_attribute("r", "5")?;
         let closure6 =
             Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
@@ -135,7 +135,7 @@ impl Nodes {
         let node7 = DOCUMENT
             .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
             .dyn_into::<web_sys::SvgElement>()?;
-        node7.set_attribute("class", "cc_selection_node")?;
+        node7.set_attribute("class", "cc_selection_node cc_selection_node_b")?;
         node7.set_attribute("r", "5")?;
         let closure7 =
             Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
@@ -151,7 +151,7 @@ impl Nodes {
         let node8 = DOCUMENT
             .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
             .dyn_into::<web_sys::SvgElement>()?;
-        node8.set_attribute("class", "cc_selection_node")?;
+        node8.set_attribute("class", "cc_selection_node cc_selection_node_l")?;
         node8.set_attribute("r", "5")?;
         let closure8 =
             Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {

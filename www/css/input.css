@@ -47,7 +47,39 @@
 }
 
 .cc_selection_node {
-    @apply fill-primary cursor-pointer;
+    @apply fill-primary;
+}
+
+.cc_selection_node_tl {
+    @apply cursor-nwse-resize;
+}
+
+.cc_selection_node_t {
+    @apply cursor-ns-resize;
+}
+
+.cc_selection_node_tr {
+    @apply cursor-nesw-resize;
+}
+
+.cc_selection_node_r {
+    @apply cursor-ew-resize;
+}
+
+.cc_selection_node_br {
+    @apply cursor-nwse-resize;
+}
+
+.cc_selection_node_b {
+    @apply cursor-ns-resize;
+}
+
+.cc_selection_node_bl {
+    @apply cursor-nesw-resize;
+}
+
+.cc_selection_node_l {
+    @apply cursor-ew-resize;
 }
 
 .cc_arrow {
