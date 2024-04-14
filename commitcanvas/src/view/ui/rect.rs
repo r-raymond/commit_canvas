@@ -1,6 +1,7 @@
 use crate::{
     globals::{CONTROL, DOCUMENT, SVG_VIEW_GROUP},
     model::{Shape, ShapeDetails},
+    settings::PIXEL_STEP,
     types::to_identifier,
 };
 use rough::to_svg_path;
@@ -12,12 +13,81 @@ fn render_path(start: (f32, f32), end: (f32, f32), roughness: f32, rounding: f32
     let rounding = rounding
         .min(0.3 * (end.0 - start.0))
         .min(0.3 * (end.1 - start.1));
+    let rounding_factor = 0.3;
     format!(
-        "{} {} {} {}",
-        to_svg_path(start, (end.0, start.1), roughness, 2, 1.0,),
-        to_svg_path((end.0, start.1), end, roughness, 2, 1.0,),
-        to_svg_path(end, (start.0, end.1), roughness, 2, 1.0,),
-        to_svg_path((start.0, end.1), start, roughness, 2, 1.0,),
+        "{} {} {} {} {} {} {} {}",
+        to_svg_path(
+            (start.0 + rounding, start.1),
+            (end.0 - rounding, start.1),
+            roughness,
+            2,
+            1.0,
+        ),
+        format!(
+            "M {} {} C {} {} {} {} {} {}",
+            end.0 - rounding,
+            start.1,
+            end.0 - rounding_factor * rounding,
+            start.1,
+            end.0,
+            start.1 + rounding_factor * rounding,
+            end.0,
+            start.1 + rounding
+        ),
+        to_svg_path(
+            (end.0, start.1 + rounding),
+            (end.0, end.1 - rounding),
+            roughness,
+            2,
+            1.0,
+        ),
+        format!(
+            "M {} {} C {} {} {} {} {} {}",
+            end.0,
+            end.1 - rounding,
+            end.0,
+            end.1 - rounding_factor * rounding,
+            end.0 - rounding_factor * rounding,
+            end.1,
+            end.0 - rounding,
+            end.1
+        ),
+        to_svg_path(
+            (end.0 - rounding, end.1),
+            (start.0 + rounding, end.1),
+            roughness,
+            2,
+            1.0,
+        ),
+        format!(
+            "M {} {} C {} {} {} {} {} {}",
+            start.0 + rounding,
+            end.1,
+            start.0 + rounding_factor * rounding,
+            end.1,
+            start.0,
+            end.1 - rounding_factor * rounding,
+            start.0,
+            end.1 - rounding
+        ),
+        to_svg_path(
+            (start.0, end.1 - rounding),
+            (start.0, start.1 + rounding),
+            roughness,
+            2,
+            1.0,
+        ),
+        format!(
+            "M {} {} C {} {} {} {} {} {}",
+            start.0,
+            start.1 + rounding,
+            start.0,
+            start.1 + rounding_factor * rounding,
+            start.0 + rounding_factor * rounding,
+            start.1,
+            start.0 + rounding,
+            start.1
+        ),
     )
 }
 
@@ -27,7 +97,7 @@ pub fn create_rect(shape: &Shape) -> Result<Item, JsValue> {
             shape.start.into(),
             shape.end.into(),
             (&shape.options.roughness).into(),
-            2.0,
+            PIXEL_STEP * 8.0,
         );
 
         let path = DOCUMENT
@@ -37,7 +107,7 @@ pub fn create_rect(shape: &Shape) -> Result<Item, JsValue> {
             .dyn_into::<web_sys::SvgElement>()?;
         path.set_attribute("d", &svg_path)?;
         path.set_attribute("class", "cc_rect")?;
-        path.set_attribute("filter", "url(#cc_pencil_texture)")?;
+        //path.set_attribute("filter", "url(#cc_pencil_texture)")?;
 
         let rect = DOCUMENT
             .with(|document| {
@@ -101,7 +171,7 @@ pub fn update_rect(shape: &Shape, item: &Item) -> Result<(), JsValue> {
                 shape.start.into(),
                 shape.end.into(),
                 (&shape.options.roughness).into(),
-                2.0,
+                PIXEL_STEP * 8.0,
             );
             path.set_attribute("d", &svg_path)?;
             selector.set_attribute("d", &svg_path)?;
