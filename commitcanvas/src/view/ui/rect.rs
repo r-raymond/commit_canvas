@@ -10,83 +10,61 @@ use wasm_bindgen::{closure::Closure, JsCast, JsValue};
 use super::Item;
 
 fn render_path(start: (f32, f32), end: (f32, f32), roughness: f32, rounding: f32) -> String {
-    let rounding = rounding
-        .min(0.3 * (end.0 - start.0))
-        .min(0.3 * (end.1 - start.1));
+    let x = start.0.min(end.0);
+    let y = start.1.min(end.1);
+    let p = start.0.max(end.0);
+    let q = start.1.max(end.1);
+    let rounding = rounding.min(0.3 * (p - x)).min(0.3 * (q - y));
     let rounding_factor = 0.3;
     format!(
         "{} {} {} {} {} {} {} {}",
-        to_svg_path(
-            (start.0 + rounding, start.1),
-            (end.0 - rounding, start.1),
-            roughness,
-            2,
-            1.0,
-        ),
+        to_svg_path((x + rounding, y), (p - rounding, y), roughness, 2, 1.0,),
         format!(
             "M {} {} C {} {} {} {} {} {}",
-            end.0 - rounding,
-            start.1,
-            end.0 - rounding_factor * rounding,
-            start.1,
-            end.0,
-            start.1 + rounding_factor * rounding,
-            end.0,
-            start.1 + rounding
+            p - rounding,
+            y,
+            p - rounding_factor * rounding,
+            y,
+            p,
+            y + rounding_factor * rounding,
+            p,
+            y + rounding
         ),
-        to_svg_path(
-            (end.0, start.1 + rounding),
-            (end.0, end.1 - rounding),
-            roughness,
-            2,
-            1.0,
-        ),
+        to_svg_path((p, y + rounding), (p, q - rounding), roughness, 2, 1.0,),
         format!(
             "M {} {} C {} {} {} {} {} {}",
-            end.0,
-            end.1 - rounding,
-            end.0,
-            end.1 - rounding_factor * rounding,
-            end.0 - rounding_factor * rounding,
-            end.1,
-            end.0 - rounding,
-            end.1
+            p,
+            q - rounding,
+            p,
+            q - rounding_factor * rounding,
+            p - rounding_factor * rounding,
+            q,
+            p - rounding,
+            q
         ),
-        to_svg_path(
-            (end.0 - rounding, end.1),
-            (start.0 + rounding, end.1),
-            roughness,
-            2,
-            1.0,
-        ),
+        to_svg_path((p - rounding, q), (x + rounding, q), roughness, 2, 1.0,),
         format!(
             "M {} {} C {} {} {} {} {} {}",
-            start.0 + rounding,
-            end.1,
-            start.0 + rounding_factor * rounding,
-            end.1,
-            start.0,
-            end.1 - rounding_factor * rounding,
-            start.0,
-            end.1 - rounding
+            x + rounding,
+            q,
+            x + rounding_factor * rounding,
+            q,
+            x,
+            q - rounding_factor * rounding,
+            x,
+            q - rounding
         ),
-        to_svg_path(
-            (start.0, end.1 - rounding),
-            (start.0, start.1 + rounding),
-            roughness,
-            2,
-            1.0,
-        ),
+        to_svg_path((x, q - rounding), (x, y + rounding), roughness, 2, 1.0,),
         format!(
             "M {} {} C {} {} {} {} {} {}",
-            start.0,
-            start.1 + rounding,
-            start.0,
-            start.1 + rounding_factor * rounding,
-            start.0 + rounding_factor * rounding,
-            start.1,
-            start.0 + rounding,
-            start.1
+            x,
+            y + rounding,
+            x,
+            y + rounding_factor * rounding,
+            x + rounding_factor * rounding,
+            y,
+            x + rounding,
+            y
         ),
     )
 }
