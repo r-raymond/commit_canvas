@@ -256,6 +256,7 @@ impl Drop for Nodes {
 }
 
 pub struct Selection {
+    #[allow(dead_code)]
     pub selected: Guid,
     pub path: web_sys::SvgElement,
     pub nodes: Nodes,

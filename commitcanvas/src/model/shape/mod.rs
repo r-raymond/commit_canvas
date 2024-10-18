@@ -36,6 +36,7 @@ pub struct Shape {
 
 #[derive(Clone, Debug)]
 pub struct ShapeUpdate {
+    #[allow(dead_code)]
     pub guid: Guid,
     pub start: Option<Point>,
     pub end: Option<Point>,

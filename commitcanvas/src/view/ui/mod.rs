@@ -24,6 +24,7 @@ pub enum Item {
         group: web_sys::SvgElement,
         path: web_sys::SvgPathElement,
         selector: web_sys::SvgPathElement,
+        #[allow(dead_code)]
         selector_closure: wasm_bindgen::closure::Closure<dyn Fn(web_sys::MouseEvent)>,
     },
     Rect {
@@ -31,6 +32,7 @@ pub enum Item {
         path: web_sys::SvgElement,
         rect: web_sys::SvgElement,
         selector: web_sys::SvgElement,
+        #[allow(dead_code)]
         selector_closure: wasm_bindgen::closure::Closure<dyn Fn(web_sys::MouseEvent)>,
     },
     #[allow(dead_code)]
