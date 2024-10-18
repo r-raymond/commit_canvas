@@ -19,7 +19,7 @@ fn render_path(start: (f32, f32), end: (f32, f32), roughness: f32, rounding: f32
     format!(
         "{} {} {} {} {} {} {} {}",
         to_svg_path((x + rounding, y), (p - rounding, y), roughness, 2, 1.0,),
-        format!(
+        format_args!(
             "M {} {} C {} {} {} {} {} {}",
             p - rounding,
             y,
@@ -31,7 +31,7 @@ fn render_path(start: (f32, f32), end: (f32, f32), roughness: f32, rounding: f32
             y + rounding
         ),
         to_svg_path((p, y + rounding), (p, q - rounding), roughness, 2, 1.0,),
-        format!(
+        format_args!(
             "M {} {} C {} {} {} {} {} {}",
             p,
             q - rounding,
@@ -43,7 +43,7 @@ fn render_path(start: (f32, f32), end: (f32, f32), roughness: f32, rounding: f32
             q
         ),
         to_svg_path((p - rounding, q), (x + rounding, q), roughness, 2, 1.0,),
-        format!(
+        format_args!(
             "M {} {} C {} {} {} {} {} {}",
             x + rounding,
             q,
@@ -55,7 +55,7 @@ fn render_path(start: (f32, f32), end: (f32, f32), roughness: f32, rounding: f32
             q - rounding
         ),
         to_svg_path((x, q - rounding), (x, y + rounding), roughness, 2, 1.0,),
-        format!(
+        format_args!(
             "M {} {} C {} {} {} {} {} {}",
             x,
             y + rounding,
