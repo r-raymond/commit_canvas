@@ -347,4 +347,14 @@ impl Control {
             self.selection = Some(Selection::new(new_shape).expect("failed to create selection"));
         }
     }
+
+    pub fn delete(&mut self) {
+        log::info!("delete");
+        if let State::Selected { guid } = self.state {
+            self.model.process_event(Event::Remove { guid });
+        }
+        if self.selection.is_some() {
+            self.selection = None;
+        }
+    }
 }

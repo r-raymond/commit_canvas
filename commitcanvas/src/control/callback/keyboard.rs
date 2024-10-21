@@ -44,6 +44,13 @@ pub fn setup() -> Result<(), JsValue> {
                 });
             }
 
+            if key == "Delete" || key == "Backspace" {
+                CONTROL.with(|c| {
+                    let mut control = c.borrow_mut();
+                    control.delete();
+                });
+            }
+
             Ok(())
         },
     );
