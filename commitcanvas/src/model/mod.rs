@@ -65,18 +65,49 @@ impl Model {
             }
             Event::Modify { guid, data } => {
                 log::debug!("modifying shape: {guid}");
-                self.shapes.get_mut(&guid).map(|shape| {
-                    let old_shape = shape.clone();
-                    shape.update(data);
-                    EventHistory::Modify {
-                        from: old_shape,
-                        to: shape.clone(),
+                self.shapes
+                    .get_mut(&guid)
+                    .map(|shape| {
+                        let old_shape = shape.clone();
+                        shape.update(data);
+
+                        if let Some(history) = self.history.last_mut() {
+                            if let EventHistory::Modify { from, to, commit } = history {
+                                if *commit == false && from.guid == guid {
+                                    *to = shape.clone();
+                                    return None;
+                                } else {
+                                    *commit = true;
+                                }
+                            }
+                        }
+                        Some(EventHistory::Modify {
+                            from: old_shape,
+                            to: shape.clone(),
+                            commit: false,
+                        })
+                    })
+                    .flatten()
+            }
+            Event::Checkpoint => {
+                if let Some(history) = self.history.last_mut() {
+                    if let EventHistory::Modify { commit, .. } = history {
+                        *commit = true;
                     }
-                })
+                }
+                None
             }
         };
 
         if let Some(event) = &history {
+            for view in self.views.iter_mut() {
+                if let Err(e) = view.process_event(crate::view::Event::Modify {
+                    event: event.clone(),
+                }) {
+                    log::warn!("Error updating view {:?}", e);
+                }
+            }
+        } else if let Some(event) = self.history.last() {
             for view in self.views.iter_mut() {
                 if let Err(e) = view.process_event(crate::view::Event::Modify {
                     event: event.clone(),
@@ -264,6 +295,73 @@ mod tests {
         assert_eq!(
             shape::ShapeCreate::from(model.get_shape(guid1.unwrap()).unwrap().clone()),
             data1
+        );
+    }
+
+    #[test]
+    fn test_undo_commit() {
+        let mut model = Model::new();
+        let data1 = shape::ShapeCreate {
+            guid: None,
+            start: crate::types::Point { x: 0.0, y: 0.0 },
+            end: crate::types::Point { x: 10.0, y: 10.0 },
+            details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
+            options: super::shape::Options::default(),
+        };
+        let event1 = Event::Add {
+            data: data1.clone(),
+        };
+
+        let guid1 = model.process_event(event1);
+        model.process_event(Event::Checkpoint);
+
+        assert!(guid1.is_some());
+
+        let mod1 = shape::ShapeUpdate {
+            guid: guid1.unwrap(),
+            start: None,
+            end: Some(crate::types::Point { x: 20.0, y: 20.0 }),
+            details: None,
+            options: None,
+        };
+
+        let mod2 = shape::ShapeUpdate {
+            guid: guid1.unwrap(),
+            start: None,
+            end: Some(crate::types::Point { x: 30.0, y: 30.0 }),
+            details: None,
+            options: None,
+        };
+
+        assert!(model.get_shape(guid1.unwrap()).is_some());
+        assert!(
+            model.get_shape(guid1.unwrap()).unwrap().end
+                == crate::types::Point { x: 10.0, y: 10.0 }
+        );
+
+        model.process_event(Event::Modify {
+            guid: guid1.unwrap(),
+            data: mod1,
+        });
+
+        model.process_event(Event::Modify {
+            guid: guid1.unwrap(),
+            data: mod2,
+        });
+        model.process_event(Event::Checkpoint);
+
+        assert!(model.get_shape(guid1.unwrap()).is_some());
+        assert!(
+            model.get_shape(guid1.unwrap()).unwrap().end
+                == crate::types::Point { x: 30.0, y: 30.0 }
+        );
+
+        model.undo();
+
+        assert!(model.get_shape(guid1.unwrap()).is_some());
+        assert!(
+            model.get_shape(guid1.unwrap()).unwrap().end
+                == crate::types::Point { x: 10.0, y: 10.0 }
         );
     }
 

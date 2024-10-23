@@ -8,13 +8,22 @@ pub enum Event {
     Add { data: ShapeCreate },
     Remove { guid: Guid },
     Modify { guid: Guid, data: ShapeUpdate },
+    Checkpoint,
 }
 
 #[derive(Clone, Debug)]
 pub enum EventHistory {
-    Add { shape: Shape },
-    Remove { shape: Shape },
-    Modify { from: Shape, to: Shape },
+    Add {
+        shape: Shape,
+    },
+    Remove {
+        shape: Shape,
+    },
+    Modify {
+        from: Shape,
+        to: Shape,
+        commit: bool,
+    },
 }
 
 impl EventHistory {
@@ -34,9 +43,10 @@ impl EventHistory {
             EventHistory::Remove { shape } => EventHistory::Add {
                 shape: shape.clone(),
             },
-            EventHistory::Modify { from, to } => EventHistory::Modify {
+            EventHistory::Modify { from, to, .. } => EventHistory::Modify {
                 from: to.clone(),
                 to: from.clone(),
+                commit: true,
             },
         }
     }
@@ -49,7 +59,7 @@ impl From<EventHistory> for Event {
                 data: ShapeCreate::from(shape),
             },
             EventHistory::Remove { shape } => Event::Remove { guid: shape.guid },
-            EventHistory::Modify { from, to } => Event::Modify {
+            EventHistory::Modify { from, to, .. } => Event::Modify {
                 guid: from.guid,
                 data: ShapeUpdate::from(to),
             },

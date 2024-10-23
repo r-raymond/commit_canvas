@@ -275,6 +275,7 @@ impl Control {
         if let State::Modifying { .. } = self.state {
             self.state = State::Normal;
             self.set_button_state(MainMenuButton::default());
+            self.model.process_event(Event::Checkpoint);
         }
     }
 
