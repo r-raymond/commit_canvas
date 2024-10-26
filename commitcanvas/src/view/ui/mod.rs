@@ -68,17 +68,17 @@ impl View for UIView {
         match event {
             super::event::Event::Reload { shapes } => {
                 self.items.clear();
-                for shape in shapes {
-                    match shape.details {
+                for (guid, config) in shapes {
+                    match config.details {
                         ShapeDetails::Arrow(_) => {
-                            log::info!("rendering arrow: {:?}", shape.guid);
-                            let item = create_arrow(shape)?;
-                            self.items.insert(shape.guid, item);
+                            log::info!("rendering arrow: {:?}", guid);
+                            let item = create_arrow(*guid, config)?;
+                            self.items.insert(*guid, item);
                         }
                         ShapeDetails::Rect(_) => {
-                            log::info!("rendering rect: {:?}", shape.guid);
-                            let item = create_rect(shape)?;
-                            self.items.insert(shape.guid, item);
+                            log::info!("rendering rect: {:?}", guid);
+                            let item = create_rect(*guid, config)?;
+                            self.items.insert(*guid, item);
                         }
                         ShapeDetails::Text(_) => {
                             // TODO
@@ -88,44 +88,44 @@ impl View for UIView {
             }
             super::event::Event::Modify { event } => {
                 match event {
-                    EventHistory::Add { shape } => {
-                        match shape.details {
+                    EventHistory::Add { guid, config } => {
+                        match config.details {
                             ShapeDetails::Arrow(_) => {
-                                log::info!("rendering arrow: {:?}", shape.guid);
-                                let item = create_arrow(&shape)?;
-                                self.items.insert(shape.guid, item);
+                                log::info!("rendering arrow: {:?}", guid);
+                                let item = create_arrow(guid, &config)?;
+                                self.items.insert(guid, item);
                             }
                             ShapeDetails::Rect(_) => {
-                                log::info!("rendering rect: {:?}", shape.guid);
-                                let item = create_rect(&shape)?;
-                                self.items.insert(shape.guid, item);
+                                log::info!("rendering rect: {:?}", guid);
+                                let item = create_rect(guid, &config)?;
+                                self.items.insert(guid, item);
                             }
                             ShapeDetails::Text(_) => {
                                 // TODO
                             }
                         }
                     }
-                    EventHistory::Remove { shape } => {
-                        if self.items.remove(&shape.guid).is_some() {
-                            log::info!("removing shape: {:?}", shape.guid);
+                    EventHistory::Remove { guid, .. } => {
+                        if self.items.remove(&guid).is_some() {
+                            log::info!("removing config: {:?}", guid);
                         } else {
-                            log::warn!("deleting nonexistent shape: {:?}", shape.guid);
+                            log::warn!("deleting nonexistent config: {:?}", guid);
                         }
                     }
-                    EventHistory::Modify { to, .. } => {
+                    EventHistory::Modify { guid, to, .. } => {
                         match to.details {
                             ShapeDetails::Arrow(_) => {
-                                if let Some(item) = self.items.get(&to.guid) {
+                                if let Some(item) = self.items.get(&guid) {
                                     update_arrow(&to, item)?;
                                 } else {
-                                    log::warn!("Updating nonexistent shape: {:?}", to.guid);
+                                    log::warn!("Updating nonexistent config: {:?}", guid);
                                 }
                             }
                             ShapeDetails::Rect(_) => {
-                                if let Some(item) = self.items.get(&to.guid) {
+                                if let Some(item) = self.items.get(&guid) {
                                     update_rect(&to, item)?;
                                 } else {
-                                    log::warn!("Updating nonexistent shape: {:?}", to.guid);
+                                    log::warn!("Updating nonexistent config: {:?}", guid);
                                 }
                             }
                             ShapeDetails::Text(_) => {
@@ -133,6 +133,7 @@ impl View for UIView {
                             }
                         }
                     }
+                    EventHistory::Checkpoint => {}
                 }
             }
         };

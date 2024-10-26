@@ -2,7 +2,7 @@ use wasm_bindgen::{closure::Closure, JsCast, JsValue};
 
 use crate::{
     globals::{CONTROL, DOCUMENT, SVG_CONTROL_GROUP},
-    model::{Guid, Shape},
+    model::{Guid, ShapeConfig},
 };
 
 pub struct Nodes {
@@ -34,8 +34,7 @@ pub struct Nodes {
 }
 
 impl Nodes {
-    pub fn new(shape: &Shape) -> Result<Self, JsValue> {
-        let guid = shape.guid;
+    pub fn new(guid: Guid, config: &ShapeConfig) -> Result<Self, JsValue> {
         let node1 = DOCUMENT
             .with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "circle"))?
             .dyn_into::<web_sys::SvgElement>()?;
@@ -193,50 +192,50 @@ impl Nodes {
             closure7,
             closure8,
         };
-        result.update(shape)?;
+        result.update(config)?;
         Ok(result)
     }
 
-    pub fn update(&mut self, shape: &Shape) -> Result<(), JsValue> {
+    pub fn update(&mut self, config: &ShapeConfig) -> Result<(), JsValue> {
         self.node1
-            .set_attribute("cx", shape.start.x.to_string().as_str())?;
+            .set_attribute("cx", config.start.x.to_string().as_str())?;
         self.node1
-            .set_attribute("cy", shape.start.y.to_string().as_str())?;
+            .set_attribute("cy", config.start.y.to_string().as_str())?;
         self.node2
-            .set_attribute("cx", shape.end.x.to_string().as_str())?;
+            .set_attribute("cx", config.end.x.to_string().as_str())?;
         self.node2
-            .set_attribute("cy", shape.start.y.to_string().as_str())?;
+            .set_attribute("cy", config.start.y.to_string().as_str())?;
         self.node3
-            .set_attribute("cx", shape.end.x.to_string().as_str())?;
+            .set_attribute("cx", config.end.x.to_string().as_str())?;
         self.node3
-            .set_attribute("cy", shape.end.y.to_string().as_str())?;
+            .set_attribute("cy", config.end.y.to_string().as_str())?;
         self.node4
-            .set_attribute("cx", shape.start.x.to_string().as_str())?;
+            .set_attribute("cx", config.start.x.to_string().as_str())?;
         self.node4
-            .set_attribute("cy", shape.end.y.to_string().as_str())?;
+            .set_attribute("cy", config.end.y.to_string().as_str())?;
         self.node5.set_attribute(
             "cx",
-            ((shape.start.x + shape.end.x) / 2.0).to_string().as_str(),
+            ((config.start.x + config.end.x) / 2.0).to_string().as_str(),
         )?;
         self.node5
-            .set_attribute("cy", shape.start.y.to_string().as_str())?;
+            .set_attribute("cy", config.start.y.to_string().as_str())?;
         self.node6
-            .set_attribute("cx", shape.end.x.to_string().as_str())?;
+            .set_attribute("cx", config.end.x.to_string().as_str())?;
         self.node6.set_attribute(
             "cy",
-            ((shape.start.y + shape.end.y) / 2.0).to_string().as_str(),
+            ((config.start.y + config.end.y) / 2.0).to_string().as_str(),
         )?;
         self.node7.set_attribute(
             "cx",
-            ((shape.start.x + shape.end.x) / 2.0).to_string().as_str(),
+            ((config.start.x + config.end.x) / 2.0).to_string().as_str(),
         )?;
         self.node7
-            .set_attribute("cy", shape.end.y.to_string().as_str())?;
+            .set_attribute("cy", config.end.y.to_string().as_str())?;
         self.node8
-            .set_attribute("cx", shape.start.x.to_string().as_str())?;
+            .set_attribute("cx", config.start.x.to_string().as_str())?;
         self.node8.set_attribute(
             "cy",
-            ((shape.start.y + shape.end.y) / 2.0).to_string().as_str(),
+            ((config.start.y + config.end.y) / 2.0).to_string().as_str(),
         )?;
         Ok(())
     }
@@ -269,33 +268,33 @@ impl Drop for Selection {
 }
 
 impl Selection {
-    pub fn new(shape: &Shape) -> Result<Self, JsValue> {
+    pub fn new(guid: Guid, config: &ShapeConfig) -> Result<Self, JsValue> {
         let path =
             DOCUMENT.with(|d| d.create_element_ns(Some("http://www.w3.org/2000/svg"), "path"))?;
         path.set_id("cc_selection_rect");
         path.set_attribute("class", "cc_selection_rect")?;
 
         SVG_CONTROL_GROUP.with(|g| g.append_child(&path))?;
-        let nodes = Nodes::new(shape)?;
+        let nodes = Nodes::new(guid, config)?;
 
         let mut result = Self {
-            selected: shape.guid,
+            selected: guid,
             path: path.dyn_into::<web_sys::SvgElement>()?,
             nodes,
         };
 
-        result.update(shape)?;
+        result.update(config)?;
 
         Ok(result)
     }
 
-    pub fn update(&mut self, shape: &Shape) -> Result<(), JsValue> {
+    pub fn update(&mut self, config: &ShapeConfig) -> Result<(), JsValue> {
         const EXTRA: f32 = 4096.0;
 
-        let min_x = shape.start.x.min(shape.end.x);
-        let min_y = shape.start.y.min(shape.end.y);
-        let max_x = shape.start.x.max(shape.end.x);
-        let max_y = shape.start.y.max(shape.end.y);
+        let min_x = config.start.x.min(config.end.x);
+        let min_y = config.start.y.min(config.end.y);
+        let max_x = config.start.x.max(config.end.x);
+        let max_y = config.start.y.max(config.end.y);
 
         let d = format!(
             "M {} {} L {} {} M {} {} L {} {} M {} {} L {} {} M {} {} L {} {}",
@@ -317,7 +316,7 @@ impl Selection {
             max_y,
         );
         self.path.set_attribute("d", &d)?;
-        self.nodes.update(shape)?;
+        self.nodes.update(config)?;
 
         Ok(())
     }

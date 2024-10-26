@@ -1,8 +1,10 @@
-use crate::model::EventHistory;
-
-use crate::model::Shape;
+use crate::model::{EventHistory, Guid, ShapeConfig};
 
 pub enum Event<'a> {
-    Reload { shapes: Vec<&'a Shape> },
-    Modify { event: EventHistory },
+    Reload {
+        shapes: Vec<(&'a Guid, &'a ShapeConfig)>,
+    },
+    Modify {
+        event: EventHistory,
+    },
 }

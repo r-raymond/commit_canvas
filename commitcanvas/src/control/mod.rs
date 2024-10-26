@@ -1,8 +1,8 @@
 use crate::{
     control::selection::Selection,
     model::{
-        ArrowDetails, Event, Guid, Model, Options, RectDetails, Shape, ShapeCreate, ShapeDetails,
-        ShapeUpdate,
+        ArrowDetails, Event, Guid, Model, Options, PartialShapeConfig, RectDetails, ShapeConfig,
+        ShapeDetails,
     },
     utils::{coords_to_pixels, pixels_to_coords},
     view::UIView,
@@ -49,7 +49,7 @@ pub struct Control {
     selection: Option<selection::Selection>,
     model: Model,
     state: State,
-    copied_shape: Option<Shape>,
+    copied_shape: Option<ShapeConfig>,
 }
 
 impl Control {
@@ -113,13 +113,12 @@ impl Control {
                 modification_type,
             } = self.state
             {
-                let shape = self.model.get_shape(guid).expect("failed to get shape");
+                let config = self.model.get_shape(guid).expect("failed to get shape");
                 let (x, y) = coords_to_pixels(self.mouse_coords);
                 let event = match modification_type {
                     ModificationType::TL => Event::Modify {
                         guid,
-                        data: ShapeUpdate {
-                            guid,
+                        config: PartialShapeConfig {
                             start: Some(crate::types::Point { x, y }),
                             end: None,
                             details: None,
@@ -128,21 +127,19 @@ impl Control {
                     },
                     ModificationType::TR => Event::Modify {
                         guid,
-                        data: ShapeUpdate {
-                            guid,
+                        config: PartialShapeConfig {
                             start: Some(crate::types::Point {
-                                x: shape.start.x,
+                                x: config.start.x,
                                 y,
                             }),
-                            end: Some(crate::types::Point { x, y: shape.end.y }),
+                            end: Some(crate::types::Point { x, y: config.end.y }),
                             details: None,
                             options: None,
                         },
                     },
                     ModificationType::BR => Event::Modify {
                         guid,
-                        data: ShapeUpdate {
-                            guid,
+                        config: PartialShapeConfig {
                             start: None,
                             end: Some(crate::types::Point { x, y }),
                             details: None,
@@ -151,23 +148,21 @@ impl Control {
                     },
                     ModificationType::BL => Event::Modify {
                         guid,
-                        data: ShapeUpdate {
-                            guid,
+                        config: PartialShapeConfig {
                             start: Some(crate::types::Point {
                                 x,
-                                y: shape.start.y,
+                                y: config.start.y,
                             }),
-                            end: Some(crate::types::Point { x: shape.end.x, y }),
+                            end: Some(crate::types::Point { x: config.end.x, y }),
                             details: None,
                             options: None,
                         },
                     },
                     ModificationType::T => Event::Modify {
                         guid,
-                        data: ShapeUpdate {
-                            guid,
+                        config: PartialShapeConfig {
                             start: Some(crate::types::Point {
-                                x: shape.start.x,
+                                x: config.start.x,
                                 y,
                             }),
                             end: None,
@@ -177,31 +172,28 @@ impl Control {
                     },
                     ModificationType::R => Event::Modify {
                         guid,
-                        data: ShapeUpdate {
-                            guid,
+                        config: PartialShapeConfig {
                             start: None,
-                            end: Some(crate::types::Point { x, y: shape.end.y }),
+                            end: Some(crate::types::Point { x, y: config.end.y }),
                             details: None,
                             options: None,
                         },
                     },
                     ModificationType::B => Event::Modify {
                         guid,
-                        data: ShapeUpdate {
-                            guid,
+                        config: PartialShapeConfig {
                             start: None,
-                            end: Some(crate::types::Point { x: shape.end.x, y }),
+                            end: Some(crate::types::Point { x: config.end.x, y }),
                             details: None,
                             options: None,
                         },
                     },
                     ModificationType::L => Event::Modify {
                         guid,
-                        data: ShapeUpdate {
-                            guid,
+                        config: PartialShapeConfig {
                             start: Some(crate::types::Point {
                                 x,
-                                y: shape.start.y,
+                                y: config.start.y,
                             }),
                             end: None,
                             details: None,
@@ -232,8 +224,8 @@ impl Control {
                 self.marker = None;
                 let (x, y) = coords_to_pixels(self.mouse_coords);
                 let event = Event::Add {
-                    data: ShapeCreate {
-                        guid: None,
+                    guid: None,
+                    config: ShapeConfig {
                         start: crate::types::Point { x, y },
                         end: crate::types::Point { x, y },
                         details: ShapeDetails::Arrow(ArrowDetails::default()),
@@ -251,8 +243,8 @@ impl Control {
                 self.marker = None;
                 let (x, y) = coords_to_pixels(self.mouse_coords);
                 let event = Event::Add {
-                    data: ShapeCreate {
-                        guid: None,
+                    guid: None,
+                    config: ShapeConfig {
                         start: crate::types::Point { x, y },
                         end: crate::types::Point { x, y },
                         details: ShapeDetails::Rect(RectDetails::default()),
@@ -291,7 +283,7 @@ impl Control {
         log::info!("selecting shape: {:?}", guid);
         self.state = State::Selected { guid };
         let shape = self.model.get_shape(guid).expect("failed to get shape");
-        self.selection = Some(Selection::new(shape).expect("failed to create selection"));
+        self.selection = Some(Selection::new(guid, shape).expect("failed to create selection"));
     }
 
     pub fn undo(&mut self) {
@@ -326,18 +318,18 @@ impl Control {
 
     pub fn paste(&mut self) {
         log::info!("paste");
-        if let Some(shape) = &self.copied_shape {
+        if let Some(config) = &self.copied_shape {
             let (x, y) = coords_to_pixels(self.mouse_coords);
             let event = Event::Add {
-                data: ShapeCreate {
-                    guid: None,
+                guid: None,
+                config: ShapeConfig {
                     start: crate::types::Point { x, y },
                     end: crate::types::Point {
-                        x: x + shape.end.x - shape.start.x,
-                        y: y + shape.end.y - shape.start.y,
+                        x: x + config.end.x - config.start.x,
+                        y: y + config.end.y - config.start.y,
                     },
-                    details: shape.details.clone(),
-                    options: shape.options.clone(),
+                    details: config.details.clone(),
+                    options: config.options.clone(),
                 },
             };
             let guid = self
@@ -345,7 +337,8 @@ impl Control {
                 .process_event(event)
                 .expect("failed to process event");
             let new_shape = self.model.get_shape(guid).expect("failed to get shape");
-            self.selection = Some(Selection::new(new_shape).expect("failed to create selection"));
+            self.selection =
+                Some(Selection::new(guid, new_shape).expect("failed to create selection"));
         }
     }
 

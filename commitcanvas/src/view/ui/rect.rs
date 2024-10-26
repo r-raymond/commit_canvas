@@ -1,6 +1,6 @@
 use crate::{
     globals::{CONTROL, DOCUMENT, SVG_VIEW_GROUP},
-    model::{Shape, ShapeDetails},
+    model::{Guid, ShapeConfig, ShapeDetails},
     settings::PIXEL_STEP,
     types::to_identifier,
 };
@@ -69,12 +69,12 @@ fn render_path(start: (f32, f32), end: (f32, f32), roughness: f32, rounding: f32
     )
 }
 
-pub fn create_rect(shape: &Shape) -> Result<Item, JsValue> {
-    if let ShapeDetails::Rect(d) = &shape.details {
+pub fn create_rect(guid: Guid, config: &ShapeConfig) -> Result<Item, JsValue> {
+    if let ShapeDetails::Rect(d) = &config.details {
         let svg_path = render_path(
-            shape.start.into(),
-            shape.end.into(),
-            (&shape.options.roughness).into(),
+            config.start.into(),
+            config.end.into(),
+            (&config.options.roughness).into(),
             PIXEL_STEP * 8.0,
         );
 
@@ -98,7 +98,7 @@ pub fn create_rect(shape: &Shape) -> Result<Item, JsValue> {
         let group = DOCUMENT
             .with(|document| document.create_element_ns(Some("http://www.w3.org/2000/svg"), "g"))?
             .dyn_into::<web_sys::SvgElement>()?;
-        group.set_id(&to_identifier(shape.guid));
+        group.set_id(&to_identifier(guid));
         group.append_child(&path)?;
         group.append_child(&rect)?;
 
@@ -110,7 +110,6 @@ pub fn create_rect(shape: &Shape) -> Result<Item, JsValue> {
         selector.set_attribute("d", &svg_path)?;
         selector.set_attribute("class", "cc_selector")?;
 
-        let guid = shape.guid;
         let selector_closure =
             Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
                 event.prevent_default();
@@ -132,11 +131,11 @@ pub fn create_rect(shape: &Shape) -> Result<Item, JsValue> {
             selector_closure,
         })
     } else {
-        Err(JsValue::from_str("called create_rect with non-rect shape"))
+        Err(JsValue::from_str("called create_rect with non-rect config"))
     }
 }
 
-pub fn update_rect(shape: &Shape, item: &Item) -> Result<(), JsValue> {
+pub fn update_rect(config: &ShapeConfig, item: &Item) -> Result<(), JsValue> {
     if let Item::Rect {
         path,
         rect,
@@ -144,11 +143,11 @@ pub fn update_rect(shape: &Shape, item: &Item) -> Result<(), JsValue> {
         ..
     } = item
     {
-        if let ShapeDetails::Rect(d) = &shape.details {
+        if let ShapeDetails::Rect(d) = &config.details {
             let svg_path = render_path(
-                shape.start.into(),
-                shape.end.into(),
-                (&shape.options.roughness).into(),
+                config.start.into(),
+                config.end.into(),
+                (&config.options.roughness).into(),
                 PIXEL_STEP * 8.0,
             );
             path.set_attribute("d", &svg_path)?;
@@ -177,7 +176,7 @@ pub fn update_rect(shape: &Shape, item: &Item) -> Result<(), JsValue> {
             classes.add_1((&d.background).into())?;
             Ok(())
         } else {
-            Err(JsValue::from_str("called update_rect with non-rect shape"))
+            Err(JsValue::from_str("called update_rect with non-rect config"))
         }
     } else {
         Err(JsValue::from_str("Called update_rect with non-rect item"))

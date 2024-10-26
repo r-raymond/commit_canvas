@@ -10,11 +10,11 @@ use crate::view::View;
 pub use events::{Event, EventHistory};
 
 pub use shape::{ArrowDetails, Options, RectDetails, ShapeDetails};
-pub use shape::{Shape, ShapeCreate, ShapeUpdate};
+pub use shape::{PartialShapeConfig, ShapeConfig};
 
 pub struct Model {
     guid_generator: guid::GuidGenerator,
-    shapes: HashMap<Guid, shape::Shape>,
+    shapes: HashMap<Guid, shape::ShapeConfig>,
     history: Vec<EventHistory>,
     history_index: usize,
     views: Vec<Box<dyn View>>,
@@ -38,7 +38,7 @@ impl Model {
     }
 
     pub fn process_event(&mut self, event: Event) -> Option<Guid> {
-        self.apply(event).map(|history| {
+        self.apply(event).and_then(|history| {
             self.add_to_history(history.clone());
             history.guid()
         })
@@ -46,57 +46,47 @@ impl Model {
 
     fn apply(&mut self, event: Event) -> Option<EventHistory> {
         let history = match event {
-            Event::Add { data } => {
-                let guid = if let Some(guid) = data.guid {
+            Event::Add { guid, config } => {
+                let guid = if let Some(guid) = guid {
                     guid
                 } else {
                     self.guid_generator.next()
                 };
                 log::info!("adding shape: {guid}");
-                let shape = Shape::new(guid, data.start, data.end, data.details, data.options);
-                self.shapes.insert(guid, shape.clone());
-                Some(EventHistory::Add { shape })
+                self.shapes.insert(guid, config.clone());
+                Some(EventHistory::Add { guid, config })
             }
             Event::Remove { guid } => {
                 log::info!("removing shape: {guid}");
                 self.shapes
                     .remove(&guid)
-                    .map(|shape| EventHistory::Remove { shape })
+                    .map(|config| EventHistory::Remove { guid, config })
             }
-            Event::Modify { guid, data } => {
+            Event::Modify { guid, config } => {
                 log::debug!("modifying shape: {guid}");
-                self.shapes
-                    .get_mut(&guid)
-                    .map(|shape| {
-                        let old_shape = shape.clone();
-                        shape.update(data);
+                self.shapes.get_mut(&guid).and_then(|current_config| {
+                    let old_config = current_config.clone();
+                    current_config.update(config);
 
-                        if let Some(history) = self.history.last_mut() {
-                            if let EventHistory::Modify { from, to, commit } = history {
-                                if *commit == false && from.guid == guid {
-                                    *to = shape.clone();
-                                    return None;
-                                } else {
-                                    *commit = true;
-                                }
-                            }
+                    if let Some(EventHistory::Modify {
+                        guid: shape_guid,
+                        to,
+                        ..
+                    }) = self.history.last_mut()
+                    {
+                        if *shape_guid == guid {
+                            *to = current_config.clone();
+                            return None;
                         }
-                        Some(EventHistory::Modify {
-                            from: old_shape,
-                            to: shape.clone(),
-                            commit: false,
-                        })
-                    })
-                    .flatten()
-            }
-            Event::Checkpoint => {
-                if let Some(history) = self.history.last_mut() {
-                    if let EventHistory::Modify { commit, .. } = history {
-                        *commit = true;
                     }
-                }
-                None
+                    Some(EventHistory::Modify {
+                        guid,
+                        from: old_config,
+                        to: current_config.clone(),
+                    })
+                })
             }
+            Event::Checkpoint => None,
         };
 
         if let Some(event) = &history {
@@ -144,13 +134,13 @@ impl Model {
         }
     }
 
-    pub fn get_shape(&self, guid: Guid) -> Option<&shape::Shape> {
+    pub fn get_shape(&self, guid: Guid) -> Option<&shape::ShapeConfig> {
         self.shapes.get(&guid)
     }
 
     pub fn add_view(&mut self, mut view: Box<dyn View>) {
         if let Err(e) = view.process_event(crate::view::Event::Reload {
-            shapes: self.shapes.values().collect(),
+            shapes: self.shapes.iter().collect(),
         }) {
             log::warn!("Error updating view {:?}", e);
         }
@@ -161,7 +151,7 @@ impl Model {
     pub fn reload_views(&mut self) {
         for view in self.views.iter_mut() {
             if let Err(e) = view.process_event(crate::view::Event::Reload {
-                shapes: self.shapes.values().collect(),
+                shapes: self.shapes.iter().collect(),
             }) {
                 log::warn!("Error updating view {:?}", e);
             }
@@ -176,115 +166,101 @@ mod tests {
     #[test]
     fn test_create_arrow() {
         let mut model = Model::new();
-        let mut data = shape::ShapeCreate {
-            guid: None,
+        let config = shape::ShapeConfig {
             start: crate::types::Point { x: 0.0, y: 0.0 },
             end: crate::types::Point { x: 10.0, y: 10.0 },
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
-        let event = Event::Add { data: data.clone() };
+        let event = Event::Add {
+            guid: None,
+            config: config.clone(),
+        };
 
         let guid = model.process_event(event);
-        data.guid = guid;
 
         assert!(guid.is_some());
         assert!(model.get_shape(guid.unwrap()).is_some());
-        assert_eq!(
-            shape::ShapeCreate::from(model.get_shape(guid.unwrap()).unwrap().clone()),
-            data
-        );
+        assert_eq!(*model.get_shape(guid.unwrap()).unwrap(), config);
     }
 
     #[test]
     fn test_create_rect() {
         let mut model = Model::new();
-        let mut data = shape::ShapeCreate {
-            guid: None,
+        let config = shape::ShapeConfig {
             start: crate::types::Point { x: 0.0, y: 0.0 },
             end: crate::types::Point { x: 10.0, y: 10.0 },
             details: super::shape::ShapeDetails::Rect(super::shape::RectDetails::default()),
             options: super::shape::Options::default(),
         };
-        let event = Event::Add { data: data.clone() };
+        let event = Event::Add {
+            guid: None,
+            config: config.clone(),
+        };
 
         let guid = model.process_event(event);
-        data.guid = guid;
 
         assert!(guid.is_some());
         assert!(model.get_shape(guid.unwrap()).is_some());
-        assert_eq!(
-            shape::ShapeCreate::from(model.get_shape(guid.unwrap()).unwrap().clone()),
-            data
-        );
+        assert_eq!(*model.get_shape(guid.unwrap()).unwrap(), config);
     }
 
     #[test]
     fn test_create_text() {
         let mut model = Model::new();
-        let mut data = shape::ShapeCreate {
-            guid: None,
+        let config = shape::ShapeConfig {
             start: crate::types::Point { x: 0.0, y: 0.0 },
             end: crate::types::Point { x: 10.0, y: 10.0 },
             details: super::shape::ShapeDetails::Text(super::shape::TextDetails::default()),
             options: super::shape::Options::default(),
         };
-        let event = Event::Add { data: data.clone() };
+        let event = Event::Add {
+            config: config.clone(),
+            guid: None,
+        };
 
         let guid = model.process_event(event);
-        data.guid = guid;
 
         assert!(guid.is_some());
         assert!(model.get_shape(guid.unwrap()).is_some());
-        assert_eq!(
-            shape::ShapeCreate::from(model.get_shape(guid.unwrap()).unwrap().clone()),
-            data
-        );
+        assert_eq!(*model.get_shape(guid.unwrap()).unwrap(), config);
     }
 
     #[test]
     fn test_undo() {
         let mut model = Model::new();
-        let mut data1 = shape::ShapeCreate {
-            guid: None,
+        let config1 = shape::ShapeConfig {
             start: crate::types::Point { x: 0.0, y: 0.0 },
             end: crate::types::Point { x: 10.0, y: 10.0 },
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
         let event1 = Event::Add {
-            data: data1.clone(),
+            guid: None,
+            config: config1.clone(),
         };
 
-        let mut data2 = shape::ShapeCreate {
-            guid: None,
+        let config2 = shape::ShapeConfig {
             start: crate::types::Point { x: 0.0, y: 0.0 },
             end: crate::types::Point { x: 20.0, y: 20.0 },
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
         let event2 = Event::Add {
-            data: data2.clone(),
+            guid: None,
+            config: config2.clone(),
         };
 
         let guid1 = model.process_event(event1);
         let guid2 = model.process_event(event2);
-        data1.guid = guid1;
-        data2.guid = guid2;
 
         assert!(guid1.is_some());
         assert!(model.get_shape(guid1.unwrap()).is_some());
-        assert_eq!(
-            shape::ShapeCreate::from(model.get_shape(guid1.unwrap()).unwrap().clone()),
-            data1
-        );
+        assert_eq!(*model.get_shape(guid1.unwrap()).unwrap(), config1);
 
         assert!(guid2.is_some());
         assert!(model.get_shape(guid2.unwrap()).is_some());
-        assert_eq!(
-            shape::ShapeCreate::from(model.get_shape(guid2.unwrap()).unwrap().clone()),
-            data2
-        );
+        assert_eq!(*model.get_shape(guid2.unwrap()).unwrap(), config2);
 
         model.undo();
 
@@ -292,24 +268,21 @@ mod tests {
 
         assert!(guid1.is_some());
         assert!(model.get_shape(guid1.unwrap()).is_some());
-        assert_eq!(
-            shape::ShapeCreate::from(model.get_shape(guid1.unwrap()).unwrap().clone()),
-            data1
-        );
+        assert_eq!(*model.get_shape(guid1.unwrap()).unwrap(), config1);
     }
 
     #[test]
     fn test_undo_commit() {
         let mut model = Model::new();
-        let data1 = shape::ShapeCreate {
-            guid: None,
+        let config1 = shape::ShapeConfig {
             start: crate::types::Point { x: 0.0, y: 0.0 },
             end: crate::types::Point { x: 10.0, y: 10.0 },
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
         let event1 = Event::Add {
-            data: data1.clone(),
+            guid: None,
+            config: config1.clone(),
         };
 
         let guid1 = model.process_event(event1);
@@ -317,16 +290,14 @@ mod tests {
 
         assert!(guid1.is_some());
 
-        let mod1 = shape::ShapeUpdate {
-            guid: guid1.unwrap(),
+        let mod1 = shape::PartialShapeConfig {
             start: None,
             end: Some(crate::types::Point { x: 20.0, y: 20.0 }),
             details: None,
             options: None,
         };
 
-        let mod2 = shape::ShapeUpdate {
-            guid: guid1.unwrap(),
+        let mod2 = shape::PartialShapeConfig {
             start: None,
             end: Some(crate::types::Point { x: 30.0, y: 30.0 }),
             details: None,
@@ -341,12 +312,12 @@ mod tests {
 
         model.process_event(Event::Modify {
             guid: guid1.unwrap(),
-            data: mod1,
+            config: mod1,
         });
 
         model.process_event(Event::Modify {
             guid: guid1.unwrap(),
-            data: mod2,
+            config: mod2,
         });
         model.process_event(Event::Checkpoint);
 
@@ -366,26 +337,65 @@ mod tests {
     }
 
     #[test]
-    fn test_redo() {
+    fn test_create_modify_undo() {
         let mut model = Model::new();
-        let mut data = shape::ShapeCreate {
-            guid: None,
+        let config1 = shape::ShapeConfig {
             start: crate::types::Point { x: 0.0, y: 0.0 },
             end: crate::types::Point { x: 10.0, y: 10.0 },
             details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
             options: super::shape::Options::default(),
         };
-        let event = Event::Add { data: data.clone() };
+        let event1 = Event::Add {
+            guid: None,
+            config: config1,
+        };
+
+        let guid1 = model.process_event(event1);
+
+        let mod1 = shape::PartialShapeConfig {
+            start: None,
+            end: Some(crate::types::Point { x: 20.0, y: 20.0 }),
+            details: None,
+            options: None,
+        };
+
+        model.process_event(Event::Modify {
+            guid: guid1.unwrap(),
+            config: mod1,
+        });
+
+        model.process_event(Event::Checkpoint);
+
+        assert!(model.get_shape(guid1.unwrap()).is_some());
+        assert!(
+            model.get_shape(guid1.unwrap()).unwrap().end
+                == crate::types::Point { x: 20.0, y: 20.0 }
+        );
+
+        model.undo();
+
+        //assert!(model.get_shape(guid1.unwrap()).is_none());
+    }
+
+    #[test]
+    fn test_redo() {
+        let mut model = Model::new();
+        let config = shape::ShapeConfig {
+            start: crate::types::Point { x: 0.0, y: 0.0 },
+            end: crate::types::Point { x: 10.0, y: 10.0 },
+            details: super::shape::ShapeDetails::Arrow(super::shape::ArrowDetails::default()),
+            options: super::shape::Options::default(),
+        };
+        let event = Event::Add {
+            guid: None,
+            config: config.clone(),
+        };
 
         let guid = model.process_event(event);
-        data.guid = guid;
 
         assert!(guid.is_some());
         assert!(model.get_shape(guid.unwrap()).is_some());
-        assert_eq!(
-            shape::ShapeCreate::from(model.get_shape(guid.unwrap()).unwrap().clone()),
-            data
-        );
+        assert_eq!(*model.get_shape(guid.unwrap()).unwrap(), config);
 
         model.undo();
 
@@ -394,9 +404,6 @@ mod tests {
         model.redo();
 
         assert!(model.get_shape(guid.unwrap()).is_some());
-        assert_eq!(
-            shape::ShapeCreate::from(model.get_shape(guid.unwrap()).unwrap().clone()),
-            data
-        );
+        assert_eq!(*model.get_shape(guid.unwrap()).unwrap(), config);
     }
 }
