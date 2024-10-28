@@ -1,1 +1,1 @@
-import * as cc from "commitcanvas";
+import * as ib from "infrastructure_browser";

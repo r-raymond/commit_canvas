@@ -1,19 +1,23 @@
 pub type Float = f32;
+pub type Int = i32;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Point {
-    pub x: Float,
-    pub y: Float,
+pub struct Point<T> {
+    pub x: T,
+    pub y: T,
 }
 
-impl From<(Float, Float)> for Point {
-    fn from((x, y): (Float, Float)) -> Self {
+pub type PointPixel = Point<Float>;
+pub type PointGrid = Point<Int>;
+
+impl<T> From<(T, T)> for Point<T> {
+    fn from((x, y): (T, T)) -> Self {
         Self { x, y }
     }
 }
 
-impl From<Point> for (Float, Float) {
-    fn from(point: Point) -> Self {
+impl<T> From<Point<T>> for (T, T) {
+    fn from(point: Point<T>) -> Self {
         (point.x, point.y)
     }
 }

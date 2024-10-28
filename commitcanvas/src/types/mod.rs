@@ -1,14 +1,7 @@
 mod geometry;
 
 pub use geometry::Point;
+pub use geometry::PointGrid;
+pub use geometry::PointPixel;
 
 pub type Guid = i32;
-
-pub fn to_identifier(guid: Guid) -> String {
-    format!("cc_id_{}", guid)
-}
-
-#[allow(dead_code)]
-pub fn from_identifier(identifier: &str) -> Result<Guid, std::num::ParseIntError> {
-    identifier["cc_id_".len()..].parse()
-}

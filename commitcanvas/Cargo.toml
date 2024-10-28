@@ -8,49 +8,11 @@ description.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["rlib"]
 
 [dependencies]
-wasm-bindgen = "0.2"
-console_error_panic_hook = { version = "0.1.7", optional = true }
 rough = { path = "../rough" }
 erased-serde = "0.4"
 serde.workspace = true
 serde_yaml.workspace = true
-wasm-logger = "0.2.0"
 log = "0.4"
-
-[dependencies.web-sys]
-version = "0.3"
-features = [
-  'CssStyleDeclaration',
-  'Document',
-  'DomRect',
-  'DomTokenList',
-  'Element',
-  'HtmlButtonElement',
-  'HtmlCollection',
-  'HtmlElement',
-  'HtmlTextAreaElement',
-  'KeyboardEvent',
-  'MouseEvent',
-  'Node',
-  'SvgAnimatedRect',
-  'SvgElement',
-  'SvgForeignObjectElement',
-  'SvgGraphicsElement',
-  'SvgMarkerElement',
-  'SvgPathElement',
-  'SvgRect',
-  'Touch',
-  'TouchEvent',
-  'TouchList',
-  'Window',
-]
-
-[dev-dependencies]
-wasm-bindgen-test = "0.3"
-
-[profile.release]
-opt-level = "s"
-lto = true

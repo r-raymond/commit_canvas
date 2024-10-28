@@ -1,4 +1,4 @@
-use super::event::Event;
+use commitcanvas::view::Event;
 
 pub struct View {}
 

@@ -1,19 +1,20 @@
+use menu::MainMenuUpdate;
+
+use self::menu::MainMenuButton;
+use crate::types::{Point, PointPixel};
+
+use crate::view::View;
 use crate::{
-    control::selection::Selection,
     model::{
         ArrowDetails, Event, Guid, Model, Options, PartialShapeConfig, RectDetails, ShapeConfig,
         ShapeDetails,
     },
     utils::{coords_to_pixels, pixels_to_coords},
-    view::UIView,
 };
 
-use self::menu::{setup, update_main_menu, MainMenuButton};
-
-mod callback;
-mod marker;
-mod menu;
-mod selection;
+pub mod marker;
+pub mod menu;
+pub mod selection;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ModificationType {
@@ -40,66 +41,74 @@ enum State {
     },
 }
 
-pub struct Control {
+pub struct Control<M: marker::Marker, S: selection::Selection> {
     button_state: MainMenuButton,
-    mouse_pixel_coords: (f32, f32),
-    mouse_coords: (i32, i32),
-    marker: Option<marker::Marker>,
+    mouse_pixel_coords: PointPixel,
+    mouse_coords: Point<i32>,
     #[allow(dead_code)]
-    selection: Option<selection::Selection>,
+    selection: Option<S>,
     model: Model,
     state: State,
     copied_shape: Option<ShapeConfig>,
+    main_menu_update: MainMenuUpdate,
+    marker: Option<M>,
 }
 
-impl Control {
-    pub fn new() -> Control {
+impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SELECTION> {
+    pub fn new(main_menu_update: MainMenuUpdate) -> Self {
         log::info!("starting contol setup");
-        setup().expect("failed to setup menu");
-        callback::setup().expect("failed to setup callbacks");
         let button_state = MainMenuButton::default();
-        update_main_menu(button_state).expect("failed to update main menu");
 
-        let mut model = Model::new();
-        model.add_view(Box::new(UIView::new()));
+        let model = Model::new();
 
         Control {
-            button_state: MainMenuButton::default(),
-            mouse_pixel_coords: (0., 0.),
-            mouse_coords: (0, 0),
+            button_state,
+            mouse_pixel_coords: PointPixel { x: 0.0, y: 0.0 },
+            mouse_coords: Point { x: 0, y: 0 },
             marker: None,
             selection: None,
+            main_menu_update,
             model,
             state: State::default(),
             copied_shape: None,
         }
     }
 
+    pub fn add_view(&mut self, view: Box<dyn View>) {
+        self.model.add_view(view);
+    }
+
     pub fn set_button_state(&mut self, state: MainMenuButton) {
         log::info!("setting button state to {:?}", state);
         self.button_state = state;
         self.selection = None;
-        update_main_menu(state).expect("failed to update main menu");
         match state {
             MainMenuButton::Arrow => {
-                self.marker = Some(marker::Marker::new().expect("failed to create marker"));
+                self.marker = Some(MARKER::new().expect("failed to create marker"));
             }
             MainMenuButton::Rect => {
-                self.marker = Some(marker::Marker::new().expect("failed to create marker"));
+                self.marker = Some(MARKER::new().expect("failed to create marker"));
             }
             MainMenuButton::Text => {
-                self.marker = Some(marker::Marker::new().expect("failed to create marker"));
+                self.marker = Some(MARKER::new().expect("failed to create marker"));
             }
             _ => {
                 self.marker = None;
             }
         }
+        self._update_menu();
+    }
+
+    fn _update_menu(&self) {
+        if let Err(e) = (self.main_menu_update)(self.button_state) {
+            log::error!("failed to update menu: {:?}", e);
+        }
     }
 
     pub fn mouse_update(&mut self, (x, y): (f32, f32)) {
         log::debug!("mouse update: ({}, {})", x, y);
-        self.mouse_pixel_coords = (x, y);
-        let new_coords = pixels_to_coords((x, y));
+        self.mouse_pixel_coords = Point { x, y };
+        let new_coords = pixels_to_coords(Point { x, y });
         if new_coords != self.mouse_coords {
             self.mouse_coords = new_coords;
             if let Some(marker) = &mut self.marker {
@@ -114,12 +123,12 @@ impl Control {
             } = self.state
             {
                 let config = self.model.get_shape(guid).expect("failed to get shape");
-                let (x, y) = coords_to_pixels(self.mouse_coords);
+                let p = coords_to_pixels(self.mouse_coords);
                 let event = match modification_type {
                     ModificationType::TL => Event::Modify {
                         guid,
                         config: PartialShapeConfig {
-                            start: Some(crate::types::Point { x, y }),
+                            start: Some(p),
                             end: None,
                             details: None,
                             options: None,
@@ -128,11 +137,14 @@ impl Control {
                     ModificationType::TR => Event::Modify {
                         guid,
                         config: PartialShapeConfig {
-                            start: Some(crate::types::Point {
+                            start: Some(PointPixel {
                                 x: config.start.x,
-                                y,
+                                y: p.y,
                             }),
-                            end: Some(crate::types::Point { x, y: config.end.y }),
+                            end: Some(PointPixel {
+                                x: p.x,
+                                y: config.end.y,
+                            }),
                             details: None,
                             options: None,
                         },
@@ -141,7 +153,7 @@ impl Control {
                         guid,
                         config: PartialShapeConfig {
                             start: None,
-                            end: Some(crate::types::Point { x, y }),
+                            end: Some(p),
                             details: None,
                             options: None,
                         },
@@ -149,11 +161,14 @@ impl Control {
                     ModificationType::BL => Event::Modify {
                         guid,
                         config: PartialShapeConfig {
-                            start: Some(crate::types::Point {
-                                x,
+                            start: Some(PointPixel {
+                                x: p.x,
                                 y: config.start.y,
                             }),
-                            end: Some(crate::types::Point { x: config.end.x, y }),
+                            end: Some(PointPixel {
+                                x: config.end.x,
+                                y: p.y,
+                            }),
                             details: None,
                             options: None,
                         },
@@ -161,7 +176,7 @@ impl Control {
                     ModificationType::T => Event::Modify {
                         guid,
                         config: PartialShapeConfig {
-                            start: Some(crate::types::Point {
+                            start: Some(PointPixel {
                                 x: config.start.x,
                                 y,
                             }),
@@ -174,7 +189,7 @@ impl Control {
                         guid,
                         config: PartialShapeConfig {
                             start: None,
-                            end: Some(crate::types::Point { x, y: config.end.y }),
+                            end: Some(PointPixel { x, y: config.end.y }),
                             details: None,
                             options: None,
                         },
@@ -183,7 +198,7 @@ impl Control {
                         guid,
                         config: PartialShapeConfig {
                             start: None,
-                            end: Some(crate::types::Point { x: config.end.x, y }),
+                            end: Some(PointPixel { x: config.end.x, y }),
                             details: None,
                             options: None,
                         },
@@ -191,7 +206,7 @@ impl Control {
                     ModificationType::L => Event::Modify {
                         guid,
                         config: PartialShapeConfig {
-                            start: Some(crate::types::Point {
+                            start: Some(PointPixel {
                                 x,
                                 y: config.start.y,
                             }),
@@ -222,12 +237,12 @@ impl Control {
         match self.button_state {
             MainMenuButton::Arrow => {
                 self.marker = None;
-                let (x, y) = coords_to_pixels(self.mouse_coords);
+                let mouse = coords_to_pixels(self.mouse_coords);
                 let event = Event::Add {
                     guid: None,
                     config: ShapeConfig {
-                        start: crate::types::Point { x, y },
-                        end: crate::types::Point { x, y },
+                        start: mouse,
+                        end: mouse,
                         details: ShapeDetails::Arrow(ArrowDetails::default()),
                         options: Options::default(),
                     },
@@ -241,12 +256,12 @@ impl Control {
             }
             MainMenuButton::Rect => {
                 self.marker = None;
-                let (x, y) = coords_to_pixels(self.mouse_coords);
+                let mouse = coords_to_pixels(self.mouse_coords);
                 let event = Event::Add {
                     guid: None,
                     config: ShapeConfig {
-                        start: crate::types::Point { x, y },
-                        end: crate::types::Point { x, y },
+                        start: mouse,
+                        end: mouse,
                         details: ShapeDetails::Rect(RectDetails::default()),
                         options: Options::default(),
                     },
@@ -283,7 +298,7 @@ impl Control {
         log::info!("selecting shape: {:?}", guid);
         self.state = State::Selected { guid };
         let shape = self.model.get_shape(guid).expect("failed to get shape");
-        self.selection = Some(Selection::new(guid, shape).expect("failed to create selection"));
+        self.selection = Some(SELECTION::new(guid, shape).expect("failed to create selection"));
     }
 
     pub fn undo(&mut self) {
@@ -319,14 +334,14 @@ impl Control {
     pub fn paste(&mut self) {
         log::info!("paste");
         if let Some(config) = &self.copied_shape {
-            let (x, y) = coords_to_pixels(self.mouse_coords);
+            let mouse = coords_to_pixels(self.mouse_coords);
             let event = Event::Add {
                 guid: None,
                 config: ShapeConfig {
-                    start: crate::types::Point { x, y },
-                    end: crate::types::Point {
-                        x: x + config.end.x - config.start.x,
-                        y: y + config.end.y - config.start.y,
+                    start: mouse,
+                    end: PointPixel {
+                        x: mouse.x + config.end.x - config.start.x,
+                        y: mouse.y + config.end.y - config.start.y,
                     },
                     details: config.details.clone(),
                     options: config.options.clone(),
@@ -338,7 +353,7 @@ impl Control {
                 .expect("failed to process event");
             let new_shape = self.model.get_shape(guid).expect("failed to get shape");
             self.selection =
-                Some(Selection::new(guid, new_shape).expect("failed to create selection"));
+                Some(SELECTION::new(guid, new_shape).expect("failed to create selection"));
         }
     }
 

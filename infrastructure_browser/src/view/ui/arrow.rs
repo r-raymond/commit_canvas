@@ -1,8 +1,6 @@
-use crate::{
-    globals::{CONTROL, DOCUMENT, SVG_VIEW_GROUP},
-    model::{Guid, ShapeConfig},
-    types::to_identifier,
-};
+use super::utils::to_identifier;
+use crate::globals::{CONTROL, DOCUMENT, SVG_VIEW_GROUP};
+use commitcanvas::model::{Guid, ShapeConfig};
 use rough::to_svg_path;
 use wasm_bindgen::{closure::Closure, JsCast, JsValue};
 

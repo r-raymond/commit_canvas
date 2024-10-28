@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "commitcanvas",
     "rough",
+    "infrastructure_browser",
 ]
 
 [workspace.package]

@@ -1,46 +1,42 @@
+use std::error::Error;
+
 use wasm_bindgen::{closure::Closure, JsCast, JsValue};
 
-use crate::globals::{CONTROL, DOCUMENT};
+use crate::{
+    globals::{CONTROL, DOCUMENT},
+    utils::to_error,
+};
+use commitcanvas::control::menu::MainMenuButton;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum MainMenuButton {
-    Arrow,
-    Rect,
-    Text,
-    #[default]
-    Select,
+fn button_to_title(button: &MainMenuButton) -> &'static str {
+    match button {
+        MainMenuButton::Arrow => "Arrow",
+        MainMenuButton::Rect => "Rectangle",
+        MainMenuButton::Select => "Select",
+        MainMenuButton::Text => "Text",
+    }
 }
 
-impl MainMenuButton {
-    pub fn as_title(&self) -> &'static str {
-        match self {
-            MainMenuButton::Arrow => "Arrow",
-            MainMenuButton::Rect => "Rectangle",
-            MainMenuButton::Select => "Select",
-            MainMenuButton::Text => "Text",
-        }
+fn button_to_icon(button: &MainMenuButton) -> &'static str {
+    match button {
+        MainMenuButton::Arrow => "north_west",
+        MainMenuButton::Rect => "check_box_outline_blank",
+        MainMenuButton::Select => "arrow_selector_tool",
+        MainMenuButton::Text => "match_case",
     }
+}
 
-    pub fn as_icon(&self) -> &'static str {
-        match self {
-            MainMenuButton::Arrow => "north_west",
-            MainMenuButton::Rect => "check_box_outline_blank",
-            MainMenuButton::Select => "arrow_selector_tool",
-            MainMenuButton::Text => "match_case",
-        }
-    }
-
-    pub fn as_id(&self) -> &'static str {
-        match self {
-            MainMenuButton::Arrow => "cc_button_arrow",
-            MainMenuButton::Rect => "cc_button_rect",
-            MainMenuButton::Select => "cc_button_select",
-            MainMenuButton::Text => "cc_button_text",
-        }
+fn button_to_id(button: &MainMenuButton) -> &'static str {
+    match button {
+        MainMenuButton::Arrow => "cc_button_arrow",
+        MainMenuButton::Rect => "cc_button_rect",
+        MainMenuButton::Select => "cc_button_select",
+        MainMenuButton::Text => "cc_button_text",
     }
 }
 
 pub fn setup() -> Result<(), JsValue> {
+    log::info!("setting up main menu");
     let main_buttons = [
         MainMenuButton::Select,
         MainMenuButton::Arrow,
@@ -59,10 +55,10 @@ pub fn setup() -> Result<(), JsValue> {
             let button = d
                 .create_element("button")?
                 .dyn_into::<web_sys::HtmlButtonElement>()?;
-            button.set_attribute("id", menu_button.as_id())?;
+            button.set_attribute("id", button_to_id(menu_button))?;
             button.set_attribute("class", "cc_nav_button")?;
             button.set_attribute("type", "button")?;
-            button.set_attribute("title", menu_button.as_title())?;
+            button.set_attribute("title", button_to_title(menu_button))?;
             if idx == 0 {
                 button.class_list().add_1("cc_nav_left")?;
             }
@@ -71,7 +67,7 @@ pub fn setup() -> Result<(), JsValue> {
             }
             let i = d.create_element("i")?;
             i.set_attribute("class", "material-symbols-rounded cc_icon")?;
-            i.set_inner_html(menu_button.as_icon());
+            i.set_inner_html(button_to_icon(menu_button));
             button.append_child(&i)?;
             let state = *menu_button;
             let closure = Closure::<dyn Fn()>::new(move || {
@@ -88,21 +84,29 @@ pub fn setup() -> Result<(), JsValue> {
     })
 }
 
-pub fn update(selected: MainMenuButton) -> Result<(), JsValue> {
+pub fn update(selected: MainMenuButton) -> Result<(), Box<dyn Error + Send + Sync>> {
     DOCUMENT.with(|d| {
         let active_buttons = d.get_elements_by_class_name("cc_nav_active");
         for i in 0..active_buttons.length() {
             let button = active_buttons
                 .item(i)
                 .expect("Failed to get active button")
-                .dyn_into::<web_sys::HtmlButtonElement>()?;
-            button.class_list().remove_1("cc_nav_active")?;
+                .dyn_into::<web_sys::HtmlButtonElement>()
+                .map_err(|e| to_error(e.into()))?;
+            button
+                .class_list()
+                .remove_1("cc_nav_active")
+                .map_err(to_error)?;
         }
         let new_active = d
-            .get_element_by_id(selected.as_id())
+            .get_element_by_id(button_to_id(&selected))
             .expect("Failed to get new active button")
-            .dyn_into::<web_sys::HtmlButtonElement>()?;
-        new_active.class_list().add_1("cc_nav_active")?;
+            .dyn_into::<web_sys::HtmlButtonElement>()
+            .map_err(|e| to_error(e.into()))?;
+        new_active
+            .class_list()
+            .add_1("cc_nav_active")
+            .map_err(to_error)?;
         Ok(())
     })
 }

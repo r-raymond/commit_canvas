@@ -3,7 +3,7 @@ mod options;
 mod rect;
 mod text;
 
-use crate::types::Point;
+use crate::types::PointPixel;
 
 pub use arrow::State as ArrowDetails;
 pub use rect::State as RectDetails;
@@ -27,16 +27,16 @@ pub struct Options {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ShapeConfig {
-    pub start: Point,
-    pub end: Point,
+    pub start: PointPixel, // TODO: This should be grid coordinates
+    pub end: PointPixel,   // TODO: This should be grid coordinates
     pub details: ShapeDetails,
     pub options: Options,
 }
 
 #[derive(Clone, Debug)]
 pub struct PartialShapeConfig {
-    pub start: Option<Point>,
-    pub end: Option<Point>,
+    pub start: Option<PointPixel>,
+    pub end: Option<PointPixel>,
     pub details: Option<ShapeDetails>,
     pub options: Option<Options>,
 }

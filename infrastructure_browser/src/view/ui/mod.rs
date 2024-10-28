@@ -1,18 +1,17 @@
 mod arrow;
 mod rect;
+mod utils;
 use arrow::create_arrow;
 
 use std::collections::HashMap;
-
-use wasm_bindgen::JsValue;
+use std::error::Error;
 
 use self::{arrow::update_arrow, rect::update_rect};
 
-use super::View;
-use crate::{
-    model::{EventHistory, Guid, ShapeDetails},
-    view::ui::rect::create_rect,
-};
+use crate::utils::to_error;
+use crate::view::ui::rect::create_rect;
+use commitcanvas::model::{EventHistory, Guid, ShapeDetails};
+use commitcanvas::view::{Event, View};
 
 pub struct UIView {
     pub items: HashMap<Guid, Item>,
@@ -64,20 +63,20 @@ impl Drop for Item {
 }
 
 impl View for UIView {
-    fn process_event(&mut self, event: super::event::Event) -> Result<(), JsValue> {
+    fn process_event(&mut self, event: Event) -> Result<(), Box<dyn Error + Send + Sync>> {
         match event {
-            super::event::Event::Reload { shapes } => {
+            Event::Reload { shapes } => {
                 self.items.clear();
                 for (guid, config) in shapes {
                     match config.details {
                         ShapeDetails::Arrow(_) => {
                             log::info!("rendering arrow: {:?}", guid);
-                            let item = create_arrow(*guid, config)?;
+                            let item = create_arrow(*guid, config).map_err(to_error)?;
                             self.items.insert(*guid, item);
                         }
                         ShapeDetails::Rect(_) => {
                             log::info!("rendering rect: {:?}", guid);
-                            let item = create_rect(*guid, config)?;
+                            let item = create_rect(*guid, config).map_err(to_error)?;
                             self.items.insert(*guid, item);
                         }
                         ShapeDetails::Text(_) => {
@@ -86,18 +85,18 @@ impl View for UIView {
                     }
                 }
             }
-            super::event::Event::Modify { event } => {
+            Event::Modify { event } => {
                 match event {
                     EventHistory::Add { guid, config } => {
                         match config.details {
                             ShapeDetails::Arrow(_) => {
                                 log::info!("rendering arrow: {:?}", guid);
-                                let item = create_arrow(guid, &config)?;
+                                let item = create_arrow(guid, &config).map_err(to_error)?;
                                 self.items.insert(guid, item);
                             }
                             ShapeDetails::Rect(_) => {
                                 log::info!("rendering rect: {:?}", guid);
-                                let item = create_rect(guid, &config)?;
+                                let item = create_rect(guid, &config).map_err(to_error)?;
                                 self.items.insert(guid, item);
                             }
                             ShapeDetails::Text(_) => {
@@ -116,14 +115,14 @@ impl View for UIView {
                         match to.details {
                             ShapeDetails::Arrow(_) => {
                                 if let Some(item) = self.items.get(&guid) {
-                                    update_arrow(&to, item)?;
+                                    update_arrow(&to, item).map_err(to_error)?;
                                 } else {
                                     log::warn!("Updating nonexistent config: {:?}", guid);
                                 }
                             }
                             ShapeDetails::Rect(_) => {
                                 if let Some(item) = self.items.get(&guid) {
-                                    update_rect(&to, item)?;
+                                    update_rect(&to, item).map_err(to_error)?;
                                 } else {
                                     log::warn!("Updating nonexistent config: {:?}", guid);
                                 }

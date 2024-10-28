@@ -27,16 +27,11 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 name = "commitcanvas"
 version = "0.1.0"
 dependencies = [
- "console_error_panic_hook",
  "erased-serde",
  "log",
  "rough",
  "serde",
  "serde_yaml",
- "wasm-bindgen",
- "wasm-bindgen-test",
- "wasm-logger",
- "web-sys",
 ]
 
 [[package]]
@@ -79,6 +74,23 @@ checksum = "707907fe3c25f5424cce2cb7e1cbcafee6bdbe735ca90ef77c29e84591e5b9da"
 dependencies = [
  "equivalent",
  "hashbrown",
+]
+
+[[package]]
+name = "infrastructure_browser"
+version = "0.1.0"
+dependencies = [
+ "commitcanvas",
+ "console_error_panic_hook",
+ "erased-serde",
+ "log",
+ "rough",
+ "serde",
+ "serde_yaml",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+ "wasm-logger",
+ "web-sys",
 ]
 
 [[package]]

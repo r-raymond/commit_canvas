@@ -1,13 +1,9 @@
 mod code;
 mod event;
-mod ui;
-mod url;
+use std::error::Error;
 
 pub use event::Event;
-use wasm_bindgen::JsValue;
-
-pub use ui::UIView;
 
 pub trait View {
-    fn process_event(&mut self, event: event::Event) -> Result<(), JsValue>;
+    fn process_event(&mut self, event: event::Event) -> Result<(), Box<dyn Error + Send + Sync>>;
 }

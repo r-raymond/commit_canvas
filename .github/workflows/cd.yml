@@ -28,7 +28,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - name: Build Wasm
         run: wasm-pack build --release
-        working-directory: ./commitcanvas/
+        working-directory: ./infrastructure_browser/
       - name: Install NPM Dependencies
         run: npm install
         working-directory: ./www
