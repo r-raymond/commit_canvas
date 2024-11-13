@@ -1,4 +1,3 @@
-mod code;
 mod event;
 use std::error::Error;
 
