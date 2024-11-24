@@ -129,3 +129,46 @@ test_selected_after_creation! {
     test_selected_after_creation_arrow: MainMenuButton::Arrow,
     test_selected_after_creation_rect: MainMenuButton::Rect,
 }
+
+macro_rules! test_selection_removed_on_random_click {
+    ($($name:ident: $value:expr,)*) => {
+        $(
+            #[test]
+            fn $name() {
+                let mut control = Control::<TestMarker, TestSelection>::new(Box::new(|_| Ok({})));
+                let events = Arc::new(Mutex::new(vec![]));
+                let view = TestView {
+                    events: events.clone(),
+                };
+                control.add_view(Box::new(view));
+
+                control.set_button_state($value);
+                control.mouse_update((0.0, 0.0));
+                control.mouse_down(MouseButton::Left);
+                control.mouse_update((PIXEL_STEP, PIXEL_STEP));
+                control.mouse_up();
+
+                assert_eq!(events.lock().unwrap().len(), 3);
+
+                let guid = events.lock().unwrap()[0].guid().unwrap();
+
+                let selected = control.get_selection();
+                assert!(selected.is_some());
+                assert_eq!(selected.unwrap(), guid);
+
+                control.mouse_update((2.0 * PIXEL_STEP, 2.0 * PIXEL_STEP));
+                control.mouse_down(MouseButton::Left);
+                control.mouse_up();
+
+                let selected = control.get_selection();
+                assert!(selected.is_none());
+            }
+        )*
+
+    };
+}
+
+test_selection_removed_on_random_click! {
+    test_selection_removed_on_random_click_arrow: MainMenuButton::Arrow,
+    test_selection_removed_on_random_click_rect: MainMenuButton::Rect,
+}

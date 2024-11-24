@@ -252,6 +252,11 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
             self.set_button_state(MainMenuButton::default());
             return;
         }
+        if button == MouseButton::Left {
+            if let State::Selected { .. } = self.state {
+                self.state = State::Normal;
+            }
+        }
         match self.button_state {
             MainMenuButton::Arrow => {
                 self.marker = None;
