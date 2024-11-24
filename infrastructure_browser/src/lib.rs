@@ -30,9 +30,11 @@ fn run() -> Result<(), JsValue> {
     control::menu::setup()?;
     control::setup::setup()?;
     let uiview = view::ui::UIView::new();
+    let urlview = view::url::UrlView::new();
     CONTROL.with(|c| {
         let mut control = c.borrow_mut();
         control.add_view(Box::new(uiview));
+        control.add_view(Box::new(urlview));
     });
 
     Ok(())

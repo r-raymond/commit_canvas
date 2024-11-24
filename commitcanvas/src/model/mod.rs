@@ -5,6 +5,7 @@ mod shape;
 use std::collections::HashMap;
 
 pub use crate::types::Guid;
+pub use crate::view::Event as ViewEvent;
 use crate::view::View;
 
 pub use events::{Event, EventHistory};

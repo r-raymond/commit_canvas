@@ -1,12 +1,22 @@
-use commitcanvas::view::Event;
+use commitcanvas::view::{Event, View};
+use log::info;
 
-pub struct View {}
+pub struct UrlView {}
 
-#[allow(dead_code)]
-impl View {
+impl UrlView {
     pub fn new() -> Self {
         Self {}
     }
+}
 
-    pub fn process_event(&mut self, _event: Event) {}
+impl View for UrlView {
+    fn process_event(
+        &mut self,
+        _event: Event,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        if let Event::Modify { event } = _event {
+            info!("Event: {:?}", event);
+        }
+        Ok(())
+    }
 }

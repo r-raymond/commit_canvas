@@ -1,2 +1,2 @@
 pub mod ui;
-mod url;
+pub mod url;
