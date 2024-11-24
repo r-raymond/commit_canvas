@@ -75,7 +75,7 @@ pub fn create_rect(guid: Guid, config: &ShapeConfig) -> Result<Item, JsValue> {
             config.start.into(),
             config.end.into(),
             (&config.options.roughness).into(),
-            PIXEL_STEP * 8.0,
+            PIXEL_STEP * 2.0,
         );
 
         let path = DOCUMENT
