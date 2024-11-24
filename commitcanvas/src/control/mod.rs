@@ -366,4 +366,9 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
             self.selection = None;
         }
     }
+
+    #[cfg(test)]
+    pub fn has_selection(&self) -> bool {
+        matches!(self.state, State::Selected { .. })
+    }
 }
