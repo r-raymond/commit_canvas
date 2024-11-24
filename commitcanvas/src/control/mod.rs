@@ -28,6 +28,24 @@ pub enum ModificationType {
     L,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MouseButton {
+    Left = 0,
+    Right = 1,
+}
+
+impl TryFrom<i16> for MouseButton {
+    type Error = ();
+
+    fn try_from(value: i16) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(MouseButton::Left),
+            1 => Ok(MouseButton::Right),
+            _ => Err(()),
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 enum State {
     #[default]
@@ -226,9 +244,9 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
         }
     }
 
-    pub fn mouse_down(&mut self, button: i16) {
+    pub fn mouse_down(&mut self, button: MouseButton) {
         log::debug!("mouse down");
-        if button == 2 {
+        if button == MouseButton::Right {
             // TODO: cancel shape creation or modification
             self.state = State::Normal;
             self.set_button_state(MainMenuButton::default());

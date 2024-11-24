@@ -1,3 +1,4 @@
+use commitcanvas::control::MouseButton;
 use wasm_bindgen::{closure::Closure, JsCast, JsValue};
 
 use crate::globals::{CONTROL, DOCUMENT, SVG};
@@ -17,7 +18,10 @@ pub fn setup() -> Result<(), JsValue> {
         Closure::<dyn Fn(web_sys::MouseEvent)>::new(move |event: web_sys::MouseEvent| {
             CONTROL.with(|c| {
                 let mut control = c.borrow_mut();
-                control.mouse_down(event.button());
+                let button = MouseButton::try_from(event.button())
+                    .map_err(|_| JsValue::from_str("Invalid mouse button"))
+                    .unwrap();
+                control.mouse_down(button);
             });
         });
     SVG.with(|s| s.set_onmousedown(Some(mouse_down_closure.as_ref().unchecked_ref())));

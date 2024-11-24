@@ -2,6 +2,7 @@ use commitcanvas::control::marker::Marker;
 use commitcanvas::control::menu::MainMenuButton;
 use commitcanvas::control::selection::Selection;
 use commitcanvas::control::Control;
+use commitcanvas::control::MouseButton;
 use commitcanvas::model::{EventHistory, ShapeConfig};
 use commitcanvas::settings::PIXEL_STEP;
 use commitcanvas::types::{Guid, PointPixel};
@@ -64,7 +65,7 @@ macro_rules! test_selection_remains_after_resize {
 
                 control.set_button_state($value);
                 control.mouse_update((0.0, 0.0));
-                control.mouse_down(1);
+                control.mouse_down(MouseButton::Left);
                 control.mouse_update((PIXEL_STEP, PIXEL_STEP));
                 control.mouse_up();
 
@@ -106,7 +107,7 @@ macro_rules! test_selected_after_creation {
 
                 control.set_button_state($value);
                 control.mouse_update((0.0, 0.0));
-                control.mouse_down(1);
+                control.mouse_down(MouseButton::Left);
                 control.mouse_update((PIXEL_STEP, PIXEL_STEP));
                 control.mouse_up();
 
