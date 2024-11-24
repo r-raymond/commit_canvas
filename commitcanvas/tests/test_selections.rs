@@ -74,5 +74,8 @@ fn test_selection_remains_after_resize() {
     control.mouse_update((2.0 * PIXEL_STEP, 2.0 * PIXEL_STEP));
     control.mouse_up();
 
-    assert!(control.has_selection());
+    let selected = control.has_selection();
+
+    assert!(selected.is_some());
+    assert_eq!(selected.unwrap(), guid);
 }
