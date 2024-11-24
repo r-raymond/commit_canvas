@@ -66,4 +66,13 @@ fn test_selection_remains_after_resize() {
     control.mouse_up();
 
     assert_eq!(events.lock().unwrap().len(), 3);
+
+    let guid = events.lock().unwrap()[0].guid().unwrap();
+
+    control.select(guid);
+    control.modify(guid, commitcanvas::control::ModificationType::T);
+    control.mouse_update((2.0 * PIXEL_STEP, 2.0 * PIXEL_STEP));
+    control.mouse_up();
+
+    assert!(control.has_selection());
 }

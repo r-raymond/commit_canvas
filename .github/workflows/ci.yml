@@ -22,7 +22,7 @@ jobs:
       - name: Check
         run: cargo check
       - name: Test
-        run: cargo test --verbose
+        run: cargo test --verbose --features test-utils
       - name: Clippy
         run: cargo clippy --verbose
 

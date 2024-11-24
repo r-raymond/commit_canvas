@@ -367,8 +367,8 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
         }
     }
 
-    #[cfg(test)]
+    #[cfg(feature = "test-utils")]
     pub fn has_selection(&self) -> bool {
-        matches!(self.state, State::Selected { .. })
+        self.selection.is_some()
     }
 }
