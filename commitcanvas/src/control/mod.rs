@@ -280,9 +280,9 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
     pub fn mouse_up(&mut self) {
         log::debug!("mouse up");
         if let State::Modifying { guid, .. } = self.state {
-            self.select(guid);
             self.set_button_state(MainMenuButton::default());
             self.model.process_event(Event::Checkpoint);
+            self.select(guid);
         }
     }
 
@@ -368,7 +368,7 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
     }
 
     #[cfg(feature = "test-utils")]
-    pub fn has_selection(&self) -> Option<Guid> {
+    pub fn get_selection(&self) -> Option<Guid> {
         match self.state {
             State::Selected { guid } => Some(guid),
             _ => None,

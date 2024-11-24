@@ -50,32 +50,81 @@ impl View for TestView {
     }
 }
 
-#[test]
-fn test_selection_remains_after_resize() {
-    let mut control = Control::<TestMarker, TestSelection>::new(Box::new(|_| Ok({})));
-    let events = Arc::new(Mutex::new(vec![]));
-    let view = TestView {
-        events: events.clone(),
+macro_rules! test_selection_remains_after_resize {
+    ($($name:ident: $value:expr,)*) => {
+        $(
+            #[test]
+            fn $name() {
+                let mut control = Control::<TestMarker, TestSelection>::new(Box::new(|_| Ok({})));
+                let events = Arc::new(Mutex::new(vec![]));
+                let view = TestView {
+                    events: events.clone(),
+                };
+                control.add_view(Box::new(view));
+
+                control.set_button_state($value);
+                control.mouse_update((0.0, 0.0));
+                control.mouse_down(1);
+                control.mouse_update((PIXEL_STEP, PIXEL_STEP));
+                control.mouse_up();
+
+                assert_eq!(events.lock().unwrap().len(), 3);
+
+                let guid = events.lock().unwrap()[0].guid().unwrap();
+
+                control.select(guid);
+                control.modify(guid, commitcanvas::control::ModificationType::T);
+                control.mouse_update((2.0 * PIXEL_STEP, 2.0 * PIXEL_STEP));
+                control.mouse_up();
+
+                let selected = control.get_selection();
+
+                assert!(selected.is_some());
+                assert_eq!(selected.unwrap(), guid);
+            }
+        )*
+
     };
-    control.add_view(Box::new(view));
+}
 
-    control.set_button_state(MainMenuButton::Arrow);
-    control.mouse_update((0.0, 0.0));
-    control.mouse_down(1);
-    control.mouse_update((PIXEL_STEP, PIXEL_STEP));
-    control.mouse_up();
+test_selection_remains_after_resize! {
+    test_selection_remains_after_resize_arrow: MainMenuButton::Arrow,
+    test_selection_remains_after_resize_rect: MainMenuButton::Rect,
+}
 
-    assert_eq!(events.lock().unwrap().len(), 3);
+macro_rules! test_selected_after_creation {
+    ($($name:ident: $value:expr,)*) => {
+        $(
+            #[test]
+            fn $name() {
+                let mut control = Control::<TestMarker, TestSelection>::new(Box::new(|_| Ok({})));
+                let events = Arc::new(Mutex::new(vec![]));
+                let view = TestView {
+                    events: events.clone(),
+                };
+                control.add_view(Box::new(view));
 
-    let guid = events.lock().unwrap()[0].guid().unwrap();
+                control.set_button_state($value);
+                control.mouse_update((0.0, 0.0));
+                control.mouse_down(1);
+                control.mouse_update((PIXEL_STEP, PIXEL_STEP));
+                control.mouse_up();
 
-    control.select(guid);
-    control.modify(guid, commitcanvas::control::ModificationType::T);
-    control.mouse_update((2.0 * PIXEL_STEP, 2.0 * PIXEL_STEP));
-    control.mouse_up();
+                assert_eq!(events.lock().unwrap().len(), 3);
 
-    let selected = control.has_selection();
+                let guid = events.lock().unwrap()[0].guid().unwrap();
 
-    assert!(selected.is_some());
-    assert_eq!(selected.unwrap(), guid);
+                let selected = control.get_selection();
+
+                assert!(selected.is_some());
+                assert_eq!(selected.unwrap(), guid);
+            }
+        )*
+
+    };
+}
+
+test_selected_after_creation! {
+    test_selected_after_creation_arrow: MainMenuButton::Arrow,
+    test_selected_after_creation_rect: MainMenuButton::Rect,
 }
