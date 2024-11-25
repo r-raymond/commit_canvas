@@ -31,7 +31,10 @@ pub enum ModificationType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MouseButton {
     Left = 0,
-    Right = 1,
+    Wheel = 1,
+    Right = 2,
+    Back = 3,
+    Forward = 4,
 }
 
 impl TryFrom<i16> for MouseButton {
@@ -40,7 +43,10 @@ impl TryFrom<i16> for MouseButton {
     fn try_from(value: i16) -> Result<Self, Self::Error> {
         match value {
             0 => Ok(MouseButton::Left),
-            1 => Ok(MouseButton::Right),
+            1 => Ok(MouseButton::Wheel),
+            2 => Ok(MouseButton::Right),
+            3 => Ok(MouseButton::Back),
+            4 => Ok(MouseButton::Forward),
             _ => Err(()),
         }
     }
