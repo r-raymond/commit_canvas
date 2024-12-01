@@ -29,7 +29,7 @@ fn run() -> Result<(), JsValue> {
     log::info!("calling setups");
     control::menu::setup()?;
     control::setup::setup()?;
-    let uiview = view::ui::UIView::new();
+    let uiview = SVG.with(|s| view:ui::UiView::setup(s))?;
     let urlview = view::url::UrlView::new();
     CONTROL.with(|c| {
         let mut control = c.borrow_mut();
