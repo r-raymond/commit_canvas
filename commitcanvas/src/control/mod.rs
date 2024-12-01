@@ -201,8 +201,8 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
                         guid,
                         config: PartialShapeConfig {
                             start: Some(PointPixel {
-                                x: p.x,
-                                y: config.start.y,
+                                x: config.start.x,
+                                y: p.y,
                             }),
                             end: None,
                             details: None,
