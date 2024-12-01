@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 pub type Float = f32;
 pub type Int = i32;
 
@@ -7,8 +9,17 @@ pub struct Point<T> {
     pub y: T,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Vec<T> {
+    pub x: T,
+    pub y: T,
+}
+
 pub type PointPixel = Point<Float>;
 pub type PointGrid = Point<Int>;
+
+pub type VecPixel = Vec<Float>;
+pub type VecGrid = Vec<Int>;
 
 impl<T> From<(T, T)> for Point<T> {
     fn from((x, y): (T, T)) -> Self {
@@ -19,6 +30,17 @@ impl<T> From<(T, T)> for Point<T> {
 impl<T> From<Point<T>> for (T, T) {
     fn from(point: Point<T>) -> Self {
         (point.x, point.y)
+    }
+}
+
+impl Add<Vec<Float>> for Point<Float> {
+    type Output = Point<Float>;
+
+    fn add(self, rhs: Vec<Float>) -> Point<Float> {
+        Point {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
     }
 }
 

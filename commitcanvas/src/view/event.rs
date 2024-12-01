@@ -1,4 +1,7 @@
-use crate::model::{EventHistory, Guid, ShapeConfig};
+use crate::{
+    model::{EventHistory, Guid, ShapeConfig},
+    types::VecPixel,
+};
 
 pub enum Event<'a> {
     Reload {
@@ -6,5 +9,8 @@ pub enum Event<'a> {
     },
     Modify {
         event: EventHistory,
+    },
+    Pan {
+        vec: VecPixel,
     },
 }
