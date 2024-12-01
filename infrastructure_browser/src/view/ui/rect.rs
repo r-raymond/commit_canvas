@@ -148,7 +148,7 @@ pub fn update_rect(config: &ShapeConfig, item: &Item) -> Result<(), JsValue> {
                 config.start.into(),
                 config.end.into(),
                 (&config.options.roughness).into(),
-                PIXEL_STEP * 8.0,
+                PIXEL_STEP * 2.0,
             );
             path.set_attribute("d", &svg_path)?;
             selector.set_attribute("d", &svg_path)?;
