@@ -55,7 +55,7 @@
 }
 
 .cc_selection_node_tl {
-    @apply cursor-nwse-resize;
+    @apply cursor-move;
 }
 
 .cc_selection_node_t {
@@ -63,7 +63,7 @@
 }
 
 .cc_selection_node_tr {
-    @apply cursor-nesw-resize;
+    @apply cursor-move;
 }
 
 .cc_selection_node_r {
@@ -71,7 +71,7 @@
 }
 
 .cc_selection_node_br {
-    @apply cursor-nwse-resize;
+    @apply cursor-move;
 }
 
 .cc_selection_node_b {
@@ -79,7 +79,7 @@
 }
 
 .cc_selection_node_bl {
-    @apply cursor-nesw-resize;
+    @apply cursor-move;
 }
 
 .cc_selection_node_l {
