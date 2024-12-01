@@ -201,8 +201,8 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
                         guid,
                         config: PartialShapeConfig {
                             start: Some(PointPixel {
-                                x: config.start.x,
-                                y,
+                                x: p.x,
+                                y: config.start.y,
                             }),
                             end: None,
                             details: None,
@@ -213,7 +213,10 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
                         guid,
                         config: PartialShapeConfig {
                             start: None,
-                            end: Some(PointPixel { x, y: config.end.y }),
+                            end: Some(PointPixel {
+                                x: p.x,
+                                y: config.end.y,
+                            }),
                             details: None,
                             options: None,
                         },
@@ -222,7 +225,10 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
                         guid,
                         config: PartialShapeConfig {
                             start: None,
-                            end: Some(PointPixel { x: config.end.x, y }),
+                            end: Some(PointPixel {
+                                x: config.end.x,
+                                y: p.y,
+                            }),
                             details: None,
                             options: None,
                         },
@@ -231,7 +237,7 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
                         guid,
                         config: PartialShapeConfig {
                             start: Some(PointPixel {
-                                x,
+                                x: p.x,
                                 y: config.start.y,
                             }),
                             end: None,
