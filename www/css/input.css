@@ -15,6 +15,10 @@
     @apply fill-stone-200;
 }
 
+#pattern_line {
+    @apply stroke-stone-100;
+}
+
 #cc_arrow_head {
     @apply fill-none stroke-stone-800;
 }
