@@ -1,5 +1,4 @@
 use commitcanvas::view::{Event, View};
-use log::info;
 
 pub struct UrlView {}
 
@@ -14,9 +13,7 @@ impl View for UrlView {
         &mut self,
         _event: Event,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        if let Event::Modify { event } = _event {
-            info!("Event: {:?}", event);
-        }
+        if let Event::Modify { .. } = _event {}
         Ok(())
     }
 }
