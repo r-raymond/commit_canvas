@@ -92,6 +92,7 @@ impl View for UIView {
             }
             Event::Pan { vec } => {
                 self.position = self.position + vec;
+                self.svg.scroll_by_with_x_and_y(vec.x as f64, vec.y as f64);
             }
             Event::Modify { event } => {
                 match event {
