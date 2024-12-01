@@ -85,7 +85,7 @@ pub fn create_rect(guid: Guid, config: &ShapeConfig) -> Result<Item, JsValue> {
             .dyn_into::<web_sys::SvgElement>()?;
         path.set_attribute("d", &svg_path)?;
         path.set_attribute("class", "cc_rect")?;
-        //path.set_attribute("filter", "url(#cc_pencil_texture)")?;
+        path.set_attribute("filter", "url(#cc_pencil_texture_4)")?;
 
         let rect = DOCUMENT
             .with(|document| {

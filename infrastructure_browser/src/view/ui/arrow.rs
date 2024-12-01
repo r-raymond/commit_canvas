@@ -19,7 +19,7 @@ pub fn create_arrow(guid: Guid, config: &ShapeConfig) -> Result<Item, JsValue> {
     );
     path.set_attribute("d", &svg_path)?;
     path.set_attribute("class", "cc_arrow")?;
-    //path.set_attribute("filter", "url(#cc_pencil_texture)")?;
+    path.set_attribute("filter", "url(#cc_pencil_texture_4)")?;
     path.set_attribute("marker-end", "url(#cc_arrow_head)")?;
     path.set_attribute("stroke-width", (&config.options.thickness).into())?;
     let group = DOCUMENT
