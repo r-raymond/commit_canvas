@@ -1,7 +1,7 @@
 mod control;
 mod globals;
 mod view;
-use globals::{CONTROL, SVG};
+use globals::CONTROL;
 use wasm_bindgen::prelude::*;
 
 mod utils;
@@ -29,7 +29,7 @@ fn run() -> Result<(), JsValue> {
     log::info!("calling setups");
     control::menu::setup()?;
     control::setup::setup()?;
-    let uiview = SVG.with(|s| view::ui::UIView::new(s.clone()));
+    let uiview = view::ui::UIView::new();
     let urlview = view::url::UrlView::new();
     CONTROL.with(|c| {
         let mut control = c.borrow_mut();

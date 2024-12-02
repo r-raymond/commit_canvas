@@ -45,6 +45,7 @@ features = [
   'TouchEvent',
   'TouchList',
   'Window',
+  'WheelEvent',
 ]
 
 [dev-dependencies]

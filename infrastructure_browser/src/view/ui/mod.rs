@@ -2,7 +2,6 @@ mod arrow;
 mod rect;
 mod utils;
 use arrow::create_arrow;
-use commitcanvas::types::PointPixel;
 
 use std::collections::HashMap;
 use std::error::Error;
@@ -16,8 +15,6 @@ use commitcanvas::view::{Event, View};
 
 pub struct UIView {
     pub items: HashMap<Guid, Item>,
-    position: PointPixel,
-    svg: web_sys::SvgElement,
 }
 
 #[derive(Debug)]
@@ -42,11 +39,9 @@ pub enum Item {
 }
 
 impl UIView {
-    pub fn new(svg: web_sys::SvgElement) -> Self {
+    pub fn new() -> Self {
         Self {
             items: HashMap::new(),
-            position: PointPixel { x: 0.0, y: 0.0 },
-            svg,
         }
     }
 }
@@ -89,10 +84,6 @@ impl View for UIView {
                         }
                     }
                 }
-            }
-            Event::Pan { vec } => {
-                self.position = self.position + vec;
-                self.svg.scroll_by_with_x_and_y(vec.x as f64, vec.y as f64);
             }
             Event::Modify { event } => {
                 match event {
