@@ -55,8 +55,8 @@ mod tests {
     fn test_coords_to_pixels() {
         let grid_point = PointGrid { x: 3, y: 4 };
         let expected_pixel_point = PointPixel {
-            x: 3 as f32 * 2. * PIXEL_STEP + PIXEL_STEP,
-            y: 4 as f32 * 2. * PIXEL_STEP + PIXEL_STEP,
+            x: 3_f32 * 2. * PIXEL_STEP + PIXEL_STEP,
+            y: 4_f32 * 2. * PIXEL_STEP + PIXEL_STEP,
         };
         let pixel_point = coords_to_pixels(grid_point);
         assert_eq!(pixel_point, expected_pixel_point);
