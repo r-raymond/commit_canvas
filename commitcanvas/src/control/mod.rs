@@ -7,7 +7,7 @@ use crate::view::View;
 use crate::{
     model::{
         ArrowDetails, Event, Guid, Model, Options, PartialShapeConfig, RectDetails, ShapeConfig,
-        ShapeDetails,
+        ShapeDetails, TextDetails,
     },
     utils::{coords_to_pixels, pixels_to_coords},
 };
@@ -298,6 +298,28 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
                         start: mouse,
                         end: mouse,
                         details: ShapeDetails::Rect(RectDetails::default()),
+                        options: Options::default(),
+                    },
+                };
+                if let Some(guid) = self.model.process_event(event) {
+                    self.state = State::Modifying {
+                        guid,
+                        modification_type: ModificationType::BR,
+                    };
+                }
+            }
+            MainMenuButton::Text => {
+                self.marker = None;
+                let mouse = coords_to_pixels(self.mouse_coords);
+                let event = Event::Add {
+                    guid: None,
+                    config: ShapeConfig {
+                        start: mouse,
+                        end: PointPixel { 
+                            x: mouse.x + 150.0, 
+                            y: mouse.y + 50.0 
+                        },
+                        details: ShapeDetails::Text(TextDetails::default()),
                         options: Options::default(),
                     },
                 };

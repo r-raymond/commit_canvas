@@ -98,6 +98,10 @@
     @apply fill-none stroke-none;
 }
 
+.cc_text {
+    @apply stroke-none fill-stone-800 font-['Patrick_Hand'];
+}
+
 .cc_nav_button {
     @apply px-2 py-2 bg-stone-100 hover:bg-stone-200 focus:outline-none text-stone-800 border-stone-400 border-t border-b border-r leading-0;
 }
