@@ -74,8 +74,11 @@ fn test_text_creation() {
     if let EventHistory::Add { config, .. } = event {
         if let ShapeDetails::Text(text_details) = &config.details {
             // Verify it's a text box with default content
-            assert_eq!(text_details.content, "", "Text content should be empty by default");
-            
+            assert_eq!(
+                text_details.content, "",
+                "Text content should be empty by default"
+            );
+
             // Verify positions
             assert!(config.start.x <= config.end.x, "Start x should be <= end x");
             assert!(config.start.y <= config.end.y, "Start y should be <= end y");
@@ -114,9 +117,13 @@ fn test_text_resize() {
 
     // Check for modification events
     let events_locked = events.lock().unwrap();
-    let modification_events: Vec<_> = events_locked.iter()
+    let modification_events: Vec<_> = events_locked
+        .iter()
         .filter(|e| matches!(e, EventHistory::Modify { guid: g, .. } if *g == guid))
         .collect();
-    
-    assert!(!modification_events.is_empty(), "No modification events found after resize");
+
+    assert!(
+        !modification_events.is_empty(),
+        "No modification events found after resize"
+    );
 }

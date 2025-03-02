@@ -315,9 +315,9 @@ impl<MARKER: marker::Marker, SELECTION: selection::Selection> Control<MARKER, SE
                     guid: None,
                     config: ShapeConfig {
                         start: mouse,
-                        end: PointPixel { 
-                            x: mouse.x + 150.0, 
-                            y: mouse.y + 50.0 
+                        end: PointPixel {
+                            x: mouse.x + 150.0,
+                            y: mouse.y + 50.0,
                         },
                         details: ShapeDetails::Text(TextDetails::default()),
                         options: Options::default(),
