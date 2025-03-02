@@ -17,6 +17,7 @@ use utils::set_panic_hook;
 /// # Returns
 ///
 /// * `Result<(), JsValue>` - A result indicating success or an error.
+#[allow(unexpected_cfgs)]
 #[wasm_bindgen(start)]
 fn run() -> Result<(), JsValue> {
     set_panic_hook();
